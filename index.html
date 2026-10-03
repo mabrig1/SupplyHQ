@@ -7,7 +7,8 @@
   <meta name="description" content="SupplyHQ wholesale consumer-goods marketplace for suppliers and business buyers.">
   <title>SupplyHQ — Wholesale made simple</title>
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css">\n  <link rel="stylesheet" href="enhancements.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="enhancements.css">
 </head>
 <body>
   <header class="topbar">
@@ -16,6 +17,7 @@
       <span><strong>SupplyHQ</strong><small>Wholesale made simple</small></span>
     </a>
     <div class="top-actions">
+      <a class="ghost dashboard-link" href="procurement.html">Quick Order</a>
       <a class="ghost dashboard-link" href="dashboard.html">Dashboard</a>
       <button class="ghost" id="supplierBtn">Sell wholesale</button>
       <button class="cart-btn" id="cartBtn">🛒 <span id="cartCount">0</span></button>
@@ -33,7 +35,7 @@
           <button id="searchBtn">Search</button>
         </div>
         <div class="trust-row">
-          <span>✓ MOQ-aware ordering</span><span>✓ Bulk price tiers</span><span>✓ RFQ workflow</span><span>✓ Buyer & supplier dashboards</span>
+          <span>✓ MOQ-aware ordering</span><span>✓ Quick Order + CSV</span><span>✓ RFQ negotiation</span><span>✓ Purchase orders</span>
         </div>
       </div>
 
@@ -90,6 +92,7 @@
       </div>
       <div class="cta-actions">
         <button class="light" id="supplierBtn2">Become a supplier</button>
+        <a class="light" href="procurement.html">Quick Order</a>
         <a class="light" href="dashboard.html">Open dashboard</a>
       </div>
     </section>
