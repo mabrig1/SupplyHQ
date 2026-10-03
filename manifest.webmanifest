@@ -1,0 +1,10 @@
+{
+  "name": "SupplyHQ",
+  "short_name": "SupplyHQ",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f7f5ee",
+  "theme_color": "#0f5a3a",
+  "description": "Wholesale consumer goods marketplace for suppliers and business buyers in Nigeria.",
+  "icons": []
+}
