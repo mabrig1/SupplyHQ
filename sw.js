@@ -1,5 +1,15 @@
-const CACHE = "supplyhq-v1";
-const ASSETS = ["./","./index.html","./styles.css","./app.js","./manifest.webmanifest"];
+const CACHE = "supplyhq-v2";
+const ASSETS = [
+  "./",
+  "./index.html",
+  "./dashboard.html",
+  "./styles.css",
+  "./enhancements.css",
+  "./dashboard.css",
+  "./app.js",
+  "./dashboard.js",
+  "./manifest.webmanifest"
+];
 
 self.addEventListener("install", function(event){
   event.waitUntil(caches.open(CACHE).then(function(cache){
@@ -18,7 +28,11 @@ self.addEventListener("activate", function(event){
 });
 
 self.addEventListener("fetch", function(event){
-  event.respondWith(caches.match(event.request).then(function(response){
-    return response || fetch(event.request);
-  }));
+  event.respondWith(
+    caches.match(event.request).then(function(response){
+      return response || fetch(event.request).then(function(networkResponse){
+        return networkResponse;
+      });
+    })
+  );
 });
