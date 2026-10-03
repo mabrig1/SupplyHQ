@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f5a3a">
+  <meta name="description" content="SupplyHQ wholesale consumer-goods marketplace for suppliers and business buyers.">
+  <title>SupplyHQ — Wholesale made simple</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#home" aria-label="SupplyHQ home">
+      <span class="brand-mark">S</span>
+      <span><strong>SupplyHQ</strong><small>Wholesale made simple</small></span>
+    </a>
+    <div class="top-actions">
+      <button class="ghost" id="supplierBtn">Sell wholesale</button>
+      <button class="cart-btn" id="cartBtn">🛒 <span id="cartCount">0</span></button>
+    </div>
+  </header>
+
+  <main id="home">
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">FOR RETAILERS • RESTAURANTS • HOTELS • MARKET TRADERS</span>
+        <h1>Buy consumer goods directly from wholesalers.</h1>
+        <p>Compare bulk prices, order by bag, carton or keg, and prepare supplier-ready orders from one marketplace.</p>
+        <div class="hero-search">
+          <input id="searchInput" type="search" placeholder="Search rice, palm oil, flour, beverages…">
+          <button id="searchBtn">Search</button>
+        </div>
+        <div class="trust-row">
+          <span>✓ MOQ-aware ordering</span><span>✓ Bulk price tiers</span><span>✓ Fast reorder</span>
+        </div>
+      </div>
+
+      <div class="hero-card">
+        <span class="eyebrow light-text">SUPPLYHQ</span>
+        <h2>Wholesale essentials in one place.</h2>
+        <div class="mini-product"><span>🍚</span><div><b>Rice</b><small>Bag pricing</small></div></div>
+        <div class="mini-product"><span>🫙</span><div><b>Palm Oil</b><small>Keg pricing</small></div></div>
+        <div class="mini-product"><span>🥤</span><div><b>Beverages</b><small>Carton pricing</small></div></div>
+        <button class="primary full" data-scroll="marketplace">Browse wholesale market</button>
+      </div>
+    </section>
+
+    <section class="category-strip" aria-label="Categories">
+      <button class="cat active" data-category="all">All goods</button>
+      <button class="cat" data-category="Grains">🍚 Grains</button>
+      <button class="cat" data-category="Oils">🫙 Oils</button>
+      <button class="cat" data-category="Beverages">🥤 Beverages</button>
+      <button class="cat" data-category="Flour & Baking">🌾 Flour</button>
+      <button class="cat" data-category="Household">🧼 Household</button>
+    </section>
+
+    <section class="market-wrap" id="marketplace">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">WHOLESALE MARKET</span>
+          <h2>Ready-to-order stock</h2>
+          <p class="muted">Demo catalogue. Suppliers will control live prices and stock in production.</p>
+        </div>
+        <select id="sortSelect">
+          <option value="recommended">Recommended</option>
+          <option value="price-low">Price: low to high</option>
+          <option value="moq-low">Lowest minimum order</option>
+        </select>
+      </div>
+      <div class="product-grid" id="productGrid"></div>
+    </section>
+
+    <section class="workflow">
+      <div class="section-head"><div><span class="eyebrow">HOW IT WORKS</span><h2>Built for wholesale, not retail.</h2></div></div>
+      <div class="steps">
+        <article><span>1</span><h3>Find stock</h3><p>Search goods by product, supplier location, pack size, MOQ and available stock.</p></article>
+        <article><span>2</span><h3>Compare bulk price</h3><p>See volume pricing before adding goods to your wholesale order.</p></article>
+        <article><span>3</span><h3>Order & deliver</h3><p>Prepare the order, then confirm stock, delivery and payment with the supplier.</p></article>
+      </div>
+    </section>
+
+    <section class="cta-band">
+      <div>
+        <span class="eyebrow light-text">SUPPLIERS</span>
+        <h2>Turn warehouse stock into repeat orders.</h2>
+        <p>List products, set minimum order quantities, update stock and receive retailer demand.</p>
+      </div>
+      <button class="light" id="supplierBtn2">Become a supplier</button>
+    </section>
+  </main>
+
+  <dialog id="productDialog" class="modal"><div id="productDetail"></div></dialog>
+  <dialog id="cartDialog" class="modal"><div id="cartContent"></div></dialog>
+  <dialog id="supplierDialog" class="modal">
+    <form method="dialog" id="supplierForm" class="modal-card">
+      <button class="close" value="cancel" aria-label="Close">×</button>
+      <span class="eyebrow">SUPPLIER ONBOARDING</span>
+      <h2>List your wholesale stock</h2>
+      <p class="muted">Prototype registration. The draft is stored only on this device.</p>
+      <label>Business name<input name="business" required placeholder="e.g. Chima Foods & Commodities"></label>
+      <label>Phone / WhatsApp<input name="phone" required inputmode="tel" placeholder="080…"></label>
+      <label>Primary goods
+        <select name="category">
+          <option>Rice & grains</option>
+          <option>Palm oil & cooking oil</option>
+          <option>Beverages</option>
+          <option>Flour & baking</option>
+          <option>Household goods</option>
+          <option>Mixed consumer goods</option>
+        </select>
+      </label>
+      <label>City / market<input name="location" required placeholder="e.g. Mile 3 Market, Port Harcourt"></label>
+      <label class="check"><input type="checkbox" required> I can provide business/identity verification.</label>
+      <button class="primary full" value="default">Save supplier profile</button>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <nav class="mobile-nav" aria-label="Mobile navigation">
+    <a href="#home">⌂<span>Home</span></a>
+    <a href="#marketplace">▦<span>Market</span></a>
+    <button id="mobileSupplier">＋<span>Sell</span></button>
+    <button id="mobileCart">🛒<span>Cart</span></button>
+  </nav>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
