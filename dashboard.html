@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f5a3a">
+  <title>SupplyHQ Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">S</span>
+      <span><strong>SupplyHQ</strong><small>Operations dashboard</small></span>
+    </a>
+    <div class="top-actions">
+      <a class="ghost dashboard-link" href="index.html">Marketplace</a>
+      <button class="cart-btn" id="resetDemo">Reset demo</button>
+    </div>
+  </header>
+
+  <main class="dashboard-shell">
+    <aside class="dash-sidebar">
+      <span class="eyebrow">WORKSPACE</span>
+      <h1>SupplyHQ</h1>
+      <div class="role-switch">
+        <button class="role-btn active" data-role="buyer">Buyer</button>
+        <button class="role-btn" data-role="supplier">Supplier</button>
+      </div>
+      <nav class="dash-nav">
+        <button class="active" data-view="overview">Overview</button>
+        <button data-view="orders">Orders</button>
+        <button data-view="rfqs">RFQs</button>
+        <button data-view="saved">Saved goods</button>
+        <button data-view="inventory" data-supplier-only>Inventory</button>
+      </nav>
+      <a href="index.html#marketplace" class="primary dash-market-link">Browse market</a>
+    </aside>
+
+    <section class="dash-main">
+      <div class="dash-head">
+        <div>
+          <span class="eyebrow" id="workspaceLabel">BUYER WORKSPACE</span>
+          <h2 id="viewTitle">Overview</h2>
+        </div>
+        <span class="demo-badge">Local demo data</span>
+      </div>
+
+      <section id="overviewView" class="dash-view active">
+        <div class="metric-grid" id="metricGrid"></div>
+        <div class="dash-grid">
+          <article class="panel">
+            <div class="panel-head"><h3>Recent orders</h3><button data-jump="orders">View all</button></div>
+            <div id="recentOrders"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><h3>Open RFQs</h3><button data-jump="rfqs">View all</button></div>
+            <div id="recentRfqs"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="ordersView" class="dash-view">
+        <article class="panel">
+          <div class="panel-head"><h3>Order history</h3><span class="muted">Orders created from the marketplace are stored on this device.</span></div>
+          <div id="ordersTable"></div>
+        </article>
+      </section>
+
+      <section id="rfqsView" class="dash-view">
+        <article class="panel">
+          <div class="panel-head"><h3>Request for quotation</h3><span class="muted">Track volume requests before committing to an order.</span></div>
+          <div id="rfqTable"></div>
+        </article>
+      </section>
+
+      <section id="savedView" class="dash-view">
+        <article class="panel">
+          <div class="panel-head"><h3>Saved goods</h3><a href="index.html#marketplace">Add more</a></div>
+          <div id="savedGrid" class="saved-grid"></div>
+        </article>
+      </section>
+
+      <section id="inventoryView" class="dash-view">
+        <article class="panel">
+          <div class="panel-head"><h3>Inventory controls</h3><span class="muted">Demo supplier controls update stock shown on the marketplace.</span></div>
+          <div id="inventoryTable"></div>
+        </article>
+      </section>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="dashboard.js" defer></script>
+</body>
+</html>
