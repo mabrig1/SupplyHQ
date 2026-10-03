@@ -162,12 +162,28 @@ function placeOrder(){
   if(!rows.length) return;
   const total = rows.reduce((sum,row)=>sum+row.final*row.qty,0);
   const now = new Date();
+  const commissionRate = Number(localStorage.getItem("supplyhq-commission-rate") || 5);
+  const splitMap = {};
+  rows.forEach(row=>{
+    const subtotal = row.final * row.qty;
+    if(!splitMap[row.supplier]) splitMap[row.supplier] = {supplier:row.supplier,gross:0,items:0};
+    splitMap[row.supplier].gross += subtotal;
+    splitMap[row.supplier].items += 1;
+  });
+  const supplierSplits = Object.values(splitMap).map(split=>({
+    ...split,
+    commissionRate,
+    commission: Math.round(split.gross * commissionRate / 100),
+    net: Math.round(split.gross * (1 - commissionRate / 100)),
+    payoutStatus: "Pending"
+  }));
   const order = {
     id:"SHQ-"+String(now.getTime()).slice(-7),
     total,
     status:"Pending",
     createdAt:now.toISOString(),
-    items:rows.map(row=>({id:row.id,name:row.name,qty:row.qty,unit:row.unit,price:row.final,supplier:row.supplier}))
+    items:rows.map(row=>({id:row.id,name:row.name,qty:row.qty,unit:row.unit,price:row.final,supplier:row.supplier})),
+    supplierSplits
   };
   const orderData = read("supplyhq-orders",[]);
   orderData.push(order);
