@@ -1,0 +1,13 @@
+.dashboard-link{text-decoration:none;color:var(--ink);display:inline-flex;align-items:center}
+.save-btn.saved{background:#edf4ea;border-color:#b8d2bd;color:var(--green)}
+.detail-actions{display:grid;grid-template-columns:1fr 1.5fr;gap:10px;margin-top:18px}
+.detail-actions button{padding:12px;border-radius:11px;font-weight:800}
+.cta-actions{display:flex;gap:10px;flex-wrap:wrap}
+.cta-actions .light{text-decoration:none;color:var(--ink);display:inline-flex;align-items:center}
+@media(max-width:640px){
+  .top-actions .dashboard-link{display:none}
+  .mobile-nav.five{grid-template-columns:repeat(5,1fr)}
+  .detail-actions{grid-template-columns:1fr}
+  .card-actions{display:grid;grid-template-columns:1fr 1fr}
+  .card-actions .add{grid-column:1/-1}
+}
