@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f5a3a">
+  <title>SupplyHQ Procurement</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="procurement.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">S</span>
+      <span><strong>SupplyHQ</strong><small>B2B procurement workspace</small></span>
+    </a>
+    <div class="top-actions">
+      <a class="ghost dashboard-link" href="dashboard.html">Dashboard</a>
+      <a class="ghost dashboard-link" href="index.html">Marketplace</a>
+    </div>
+  </header>
+
+  <main class="proc-shell">
+    <section class="proc-head">
+      <div>
+        <span class="eyebrow">B2B PROCUREMENT</span>
+        <h1>Buy faster. Reorder smarter.</h1>
+        <p class="muted">Quick-order SKUs, reusable requisition lists, company buying profiles, quote negotiation and purchase-order records.</p>
+      </div>
+      <span class="demo-badge">Local prototype</span>
+    </section>
+
+    <nav class="proc-tabs" aria-label="Procurement tools">
+      <button class="active" data-tab="quick">Quick Order</button>
+      <button data-tab="lists">Requisition Lists</button>
+      <button data-tab="quotes">Quote Desk</button>
+      <button data-tab="pos">Purchase Orders</button>
+      <button data-tab="company">Company</button>
+    </nav>
+
+    <section id="quickTab" class="proc-tab active">
+      <div class="proc-grid">
+        <article class="panel">
+          <div class="panel-head">
+            <div><h3>Quick order by SKU</h3><p class="muted small">Enter SKU and quantity. SupplyHQ enforces each product's MOQ.</p></div>
+            <button id="addQuickRow">+ Add row</button>
+          </div>
+          <div class="quick-head"><span>SKU</span><span>Quantity</span><span>Match</span><span></span></div>
+          <div id="quickRows"></div>
+          <div class="quick-actions">
+            <button class="outline" id="saveAsList">Save as requisition list</button>
+            <button class="primary" id="quickAddCart">Add matched items to cart</button>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head"><h3>Paste CSV</h3><span class="muted small">Format: SKU,QTY</span></div>
+          <textarea id="csvInput" class="csv-box" placeholder="RICE-PB50,10&#10;PALM-25L,6&#10;SOFT-CRT,20"></textarea>
+          <button class="primary full" id="importCsv">Import rows</button>
+          <div class="sku-help" id="skuHelp"></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="listsTab" class="proc-tab">
+      <article class="panel">
+        <div class="panel-head"><h3>Reusable requisition lists</h3><span class="muted">Build standard weekly or monthly orders.</span></div>
+        <div id="requisitionLists"></div>
+      </article>
+    </section>
+
+    <section id="quotesTab" class="proc-tab">
+      <div class="proc-grid">
+        <article class="panel">
+          <div class="panel-head"><h3>RFQ inbox</h3><span class="muted">Open a request to negotiate.</span></div>
+          <div id="quoteList"></div>
+        </article>
+        <article class="panel">
+          <div class="panel-head"><h3>Negotiation thread</h3><span class="muted">Buyer and supplier messages.</span></div>
+          <div id="quoteThread" class="quote-thread empty-state">Select an RFQ.</div>
+          <form id="quoteMessageForm" class="quote-form">
+            <select id="quoteActor"><option value="Buyer">Buyer</option><option value="Supplier">Supplier</option></select>
+            <input id="quoteAmount" type="number" min="0" placeholder="Counter price / unit">
+            <textarea id="quoteMessage" required placeholder="Write negotiation message…"></textarea>
+            <button class="primary">Send message</button>
+          </form>
+        </article>
+      </div>
+    </section>
+
+    <section id="posTab" class="proc-tab">
+      <article class="panel">
+        <div class="panel-head"><h3>Purchase orders</h3><span class="muted">Convert marketplace orders into procurement references.</span></div>
+        <div id="purchaseOrders"></div>
+      </article>
+    </section>
+
+    <section id="companyTab" class="proc-tab">
+      <div class="proc-grid">
+        <article class="panel">
+          <div class="panel-head"><h3>Buyer company</h3><span class="muted">Prototype profile and approval workflow.</span></div>
+          <form id="companyForm" class="company-form">
+            <label>Company / shop name<input name="name" required></label>
+            <label>Buyer segment
+              <select name="segment">
+                <option>Retailer</option><option>Supermarket</option><option>Restaurant</option>
+                <option>Hotel</option><option>Distributor</option><option>Institution</option>
+              </select>
+            </label>
+            <label>Primary location<input name="location" required></label>
+            <label>Procurement email<input name="email" type="email"></label>
+            <button class="primary">Save company profile</button>
+          </form>
+          <div id="companyStatus"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head"><h3>Company users & roles</h3><button id="addCompanyUser">+ Add user</button></div>
+          <div id="companyUsers"></div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="nameListDialog" class="modal">
+    <form method="dialog" id="nameListForm" class="modal-card">
+      <button class="close" value="cancel">×</button>
+      <span class="eyebrow">REQUISITION LIST</span>
+      <h2>Save this buying list</h2>
+      <label>List name<input id="listName" required placeholder="e.g. Weekly Shop Restock"></label>
+      <button class="primary full" value="default">Save list</button>
+    </form>
+  </dialog>
+
+  <dialog id="userDialog" class="modal">
+    <form method="dialog" id="userForm" class="modal-card">
+      <button class="close" value="cancel">×</button>
+      <span class="eyebrow">COMPANY USER</span>
+      <h2>Add buyer team member</h2>
+      <label>Name<input name="name" required></label>
+      <label>Email<input name="email" type="email" required></label>
+      <label>Role
+        <select name="role">
+          <option>Buyer</option><option>Approver</option><option>Finance</option><option>Viewer</option>
+        </select>
+      </label>
+      <button class="primary full" value="default">Add user</button>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="procurement.js" defer></script>
+</body>
+</html>
