@@ -62,3 +62,15 @@
   .inventory-row{grid-template-columns:1fr 80px}
   .inventory-row button{grid-column:1/-1}
 }
+.dash-side-link{display:block;text-align:center;text-decoration:none;margin-top:18px;padding:11px;border-radius:11px;font-weight:800}
+.mini-metrics{grid-template-columns:repeat(3,minmax(0,1fr));margin:8px 0 18px}
+#supplierIdentity{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px;max-width:260px}
+.payout-row{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr .8fr;gap:10px;align-items:center;padding:12px;border-radius:12px;background:#f7f8f4;font-size:13px}
+.payout-row.header{background:transparent;padding:3px 12px;color:var(--muted);font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.08em}
+.status.quoted{background:#dfeff8;color:#215777}
+.status.closed{background:#ececec;color:#555}
+@media(max-width:640px){
+  .mini-metrics{grid-template-columns:1fr}
+  .payout-row{grid-template-columns:1fr 1fr}
+  .payout-row.header{display:none}
+}
