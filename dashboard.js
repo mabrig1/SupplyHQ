@@ -26,6 +26,7 @@ function productsWithOverrides(){
 function orders(){ return read("supplyhq-orders", []); }
 function rfqs(){ return read("supplyhq-rfqs", []); }
 function savedIds(){ return read("supplyhq-saved", []); }
+function commissionRate(){ return Number(localStorage.getItem("supplyhq-commission-rate") || 5); }
 
 function statusClass(status){
   return String(status || "pending").toLowerCase().replace(/\s+/g,"-");
@@ -33,6 +34,26 @@ function statusClass(status){
 
 function metricCard(label, value, note){
   return '<article class="metric"><small>'+label+'</small><strong>'+value+'</strong><em>'+note+'</em></article>';
+}
+
+function splitOrder(order){
+  if(Array.isArray(order.supplierSplits) && order.supplierSplits.length) return order.supplierSplits;
+  const rate=commissionRate();
+  const map={};
+  (order.items||[]).forEach(item=>{
+    const supplier=item.supplier||"Unknown supplier";
+    const subtotal=Number(item.price||0)*Number(item.qty||0);
+    if(!map[supplier]) map[supplier]={supplier,gross:0,items:0};
+    map[supplier].gross+=subtotal;
+    map[supplier].items+=1;
+  });
+  return Object.values(map).map(split=>({
+    ...split,
+    commissionRate:rate,
+    commission:Math.round(split.gross*rate/100),
+    net:Math.round(split.gross*(1-rate/100)),
+    payoutStatus:order.status==="Delivered"?"Ready":"Pending"
+  }));
 }
 
 function renderMetrics(){
@@ -50,10 +71,11 @@ function renderMetrics(){
       metricCard("Saved goods", saved.length, "Ready for quick reorder");
   }else{
     const low = inventory.filter(p=>p.stock <= p.moq * 3).length;
+    const totalNet = orderData.flatMap(splitOrder).reduce((s,x)=>s+Number(x.net||0),0);
     document.getElementById("metricGrid").innerHTML =
       metricCard("Listed SKUs", inventory.length, "Demo inventory catalogue") +
       metricCard("Incoming orders", orderData.length, "Marketplace demand") +
-      metricCard("Open RFQs", rfqData.filter(r=>r.status!=="Closed").length, "Buyer quote requests") +
+      metricCard("Net settlement", fmt(totalNet), "Across demo suppliers") +
       metricCard("Low stock", low, "At or below 3× MOQ");
   }
 }
@@ -62,8 +84,8 @@ function orderRows(limit){
   const data = orders().slice().reverse();
   const list = typeof limit === "number" ? data.slice(0,limit) : data;
   if(!list.length) return '<div class="empty-state">No orders yet. Create one from the marketplace cart.</div>';
-  return '<div class="data-list"><div class="data-row header"><span>Order</span><span>Total</span><span>Date</span><span>Status</span></div>' +
-    list.map(o => '<div class="data-row"><strong>'+o.id+'</strong><span>'+fmt(o.total)+'</span><span>'+new Date(o.createdAt).toLocaleDateString()+'</span><span class="status '+statusClass(o.status)+'">'+o.status+'</span></div>').join("") +
+  return '<div class="data-list"><div class="data-row header"><span>Order</span><span>Total</span><span>Suppliers</span><span>Status</span></div>' +
+    list.map(o => '<div class="data-row"><strong>'+o.id+'</strong><span>'+fmt(o.total)+'</span><span>'+splitOrder(o).length+'</span><span class="status '+statusClass(o.status)+'">'+o.status+'</span></div>').join("") +
   '</div>';
 }
 
@@ -72,7 +94,7 @@ function rfqRows(limit){
   const list = typeof limit === "number" ? data.slice(0,limit) : data;
   if(!list.length) return '<div class="empty-state">No RFQs yet. Request a quote from any product page.</div>';
   return '<div class="data-list"><div class="data-row header"><span>Request</span><span>Quantity</span><span>Target</span><span>Status</span></div>' +
-    list.map(r => '<div class="data-row"><strong>'+r.productName+'</strong><span>'+r.quantity+' '+r.unit+'s</span><span>'+(r.targetPrice ? fmt(r.targetPrice) : "Open")+'</span><span class="status open">'+r.status+'</span></div>').join("") +
+    list.map(r => '<div class="data-row"><strong>'+r.productName+'</strong><span>'+r.quantity+' '+r.unit+'s</span><span>'+(r.targetPrice ? fmt(r.targetPrice) : "Open")+'</span><span class="status '+statusClass(r.status)+'">'+r.status+'</span></div>').join("") +
   '</div>';
 }
 
@@ -92,11 +114,45 @@ function renderInventory(){
   ).join("");
 }
 
+function supplierNames(){
+  const names=new Set(baseProducts.map(p=>p.supplier));
+  orders().flatMap(splitOrder).forEach(s=>names.add(s.supplier));
+  return [...names];
+}
+
+function renderPayouts(){
+  const select=document.getElementById("supplierIdentity");
+  const names=supplierNames();
+  let selected=localStorage.getItem("supplyhq-active-supplier") || names[0] || "";
+  if(!names.includes(selected)) selected=names[0]||"";
+  select.innerHTML=names.map(name=>'<option '+(name===selected?"selected":"")+'>'+name+'</option>').join("");
+
+  const rows=[];
+  orders().forEach(order=>{
+    const split=splitOrder(order).find(x=>x.supplier===selected);
+    if(split) rows.push({...split,orderId:order.id,orderStatus:order.status,createdAt:order.createdAt});
+  });
+  const gross=rows.reduce((s,r)=>s+r.gross,0);
+  const fees=rows.reduce((s,r)=>s+r.commission,0);
+  const net=rows.reduce((s,r)=>s+r.net,0);
+  document.getElementById("payoutSummary").innerHTML =
+    metricCard("Gross sales",fmt(gross),"Before marketplace commission")+
+    metricCard("Commission",fmt(fees),commissionRate()+"% demo rate")+
+    metricCard("Net payout",fmt(net),"Estimated supplier settlement");
+
+  document.getElementById("payoutTable").innerHTML=rows.length
+    ? '<div class="data-list"><div class="payout-row header"><span>Order</span><span>Gross</span><span>Fee</span><span>Net</span><span>Status</span></div>'+
+      rows.slice().reverse().map(r=>'<div class="payout-row"><strong>'+r.orderId+'</strong><span>'+fmt(r.gross)+'</span><span>'+fmt(r.commission)+'</span><span>'+fmt(r.net)+'</span><span class="status '+statusClass(r.orderStatus)+'">'+(r.orderStatus==="Delivered"?"Ready":"Pending")+'</span></div>').join("")+
+      '</div>'
+    : '<div class="empty-state">No order settlement entries for this supplier yet.</div>';
+}
+
 function renderAll(){
   document.querySelectorAll(".role-btn").forEach(b=>b.classList.toggle("active",b.dataset.role===activeRole));
   document.getElementById("workspaceLabel").textContent = activeRole.toUpperCase()+" WORKSPACE";
   document.querySelectorAll("[data-supplier-only]").forEach(el=>el.style.display = activeRole==="supplier" ? "" : "none");
-  if(activeRole==="buyer" && activeView==="inventory") activeView="overview";
+  document.querySelectorAll("[data-buyer-only]").forEach(el=>el.style.display = activeRole==="buyer" ? "" : "none");
+  if(activeRole==="buyer" && ["inventory","payouts"].includes(activeView)) activeView="overview";
   renderMetrics();
   document.getElementById("recentOrders").innerHTML = orderRows(4);
   document.getElementById("recentRfqs").innerHTML = rfqRows(4);
@@ -104,6 +160,7 @@ function renderAll(){
   document.getElementById("rfqTable").innerHTML = rfqRows();
   renderSaved();
   renderInventory();
+  renderPayouts();
   showView(activeView);
 }
 
@@ -142,9 +199,13 @@ document.querySelectorAll(".role-btn").forEach(btn=>{
 });
 document.querySelectorAll(".dash-nav button").forEach(btn=>btn.addEventListener("click",()=>showView(btn.dataset.view)));
 document.querySelectorAll("[data-jump]").forEach(btn=>btn.addEventListener("click",()=>showView(btn.dataset.jump)));
+document.getElementById("supplierIdentity").addEventListener("change",event=>{
+  localStorage.setItem("supplyhq-active-supplier",event.target.value);
+  renderPayouts();
+});
 
 document.getElementById("resetDemo").addEventListener("click",()=>{
-  ["supplyhq-orders","supplyhq-rfqs","supplyhq-saved","supplyhq-stock-overrides"].forEach(k=>localStorage.removeItem(k));
+  ["supplyhq-orders","supplyhq-rfqs","supplyhq-saved","supplyhq-stock-overrides","supplyhq-requisition-lists","supplyhq-purchase-orders"].forEach(k=>localStorage.removeItem(k));
   toast("Demo marketplace data reset");
   renderAll();
 });
