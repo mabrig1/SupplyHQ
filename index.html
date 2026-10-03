@@ -16,6 +16,7 @@
       <span><strong>SupplyHQ</strong><small>Wholesale made simple</small></span>
     </a>
     <div class="top-actions">
+      <a class="ghost dashboard-link" href="dashboard.html">Dashboard</a>
       <button class="ghost" id="supplierBtn">Sell wholesale</button>
       <button class="cart-btn" id="cartBtn">🛒 <span id="cartCount">0</span></button>
     </div>
@@ -26,13 +27,13 @@
       <div class="hero-copy">
         <span class="eyebrow">FOR RETAILERS • RESTAURANTS • HOTELS • MARKET TRADERS</span>
         <h1>Buy consumer goods directly from wholesalers.</h1>
-        <p>Compare bulk prices, order by bag, carton or keg, and prepare supplier-ready orders from one marketplace.</p>
+        <p>Compare bulk prices, order by bag, carton or keg, request supplier quotes, and manage repeat purchases from one marketplace.</p>
         <div class="hero-search">
           <input id="searchInput" type="search" placeholder="Search rice, palm oil, flour, beverages…">
           <button id="searchBtn">Search</button>
         </div>
         <div class="trust-row">
-          <span>✓ MOQ-aware ordering</span><span>✓ Bulk price tiers</span><span>✓ Fast reorder</span>
+          <span>✓ MOQ-aware ordering</span><span>✓ Bulk price tiers</span><span>✓ RFQ workflow</span><span>✓ Buyer & supplier dashboards</span>
         </div>
       </div>
 
@@ -60,12 +61,13 @@
         <div>
           <span class="eyebrow">WHOLESALE MARKET</span>
           <h2>Ready-to-order stock</h2>
-          <p class="muted">Demo catalogue. Suppliers will control live prices and stock in production.</p>
+          <p class="muted">Demo catalogue. Supplier dashboard stock changes are reflected here on the same device.</p>
         </div>
         <select id="sortSelect">
           <option value="recommended">Recommended</option>
           <option value="price-low">Price: low to high</option>
           <option value="moq-low">Lowest minimum order</option>
+          <option value="stock-high">Highest stock</option>
         </select>
       </div>
       <div class="product-grid" id="productGrid"></div>
@@ -75,8 +77,8 @@
       <div class="section-head"><div><span class="eyebrow">HOW IT WORKS</span><h2>Built for wholesale, not retail.</h2></div></div>
       <div class="steps">
         <article><span>1</span><h3>Find stock</h3><p>Search goods by product, supplier location, pack size, MOQ and available stock.</p></article>
-        <article><span>2</span><h3>Compare bulk price</h3><p>See volume pricing before adding goods to your wholesale order.</p></article>
-        <article><span>3</span><h3>Order & deliver</h3><p>Prepare the order, then confirm stock, delivery and payment with the supplier.</p></article>
+        <article><span>2</span><h3>Order or request quote</h3><p>Use live tier pricing for routine purchases or send an RFQ for larger negotiated volumes.</p></article>
+        <article><span>3</span><h3>Track and reorder</h3><p>Completed checkout creates an order record in the buyer dashboard for repeat purchasing.</p></article>
       </div>
     </section>
 
@@ -84,14 +86,33 @@
       <div>
         <span class="eyebrow light-text">SUPPLIERS</span>
         <h2>Turn warehouse stock into repeat orders.</h2>
-        <p>List products, set minimum order quantities, update stock and receive retailer demand.</p>
+        <p>List products, set minimum order quantities, update stock and receive retailer demand and RFQs.</p>
       </div>
-      <button class="light" id="supplierBtn2">Become a supplier</button>
+      <div class="cta-actions">
+        <button class="light" id="supplierBtn2">Become a supplier</button>
+        <a class="light" href="dashboard.html">Open dashboard</a>
+      </div>
     </section>
   </main>
 
   <dialog id="productDialog" class="modal"><div id="productDetail"></div></dialog>
   <dialog id="cartDialog" class="modal"><div id="cartContent"></div></dialog>
+
+  <dialog id="rfqDialog" class="modal">
+    <form method="dialog" id="rfqForm" class="modal-card">
+      <button class="close" value="cancel" aria-label="Close">×</button>
+      <span class="eyebrow">REQUEST FOR QUOTATION</span>
+      <h2>Ask suppliers for a bulk quote</h2>
+      <p class="muted" id="rfqProductLabel"></p>
+      <input type="hidden" name="productId" id="rfqProductId">
+      <label>Quantity required<input name="quantity" id="rfqQuantity" required type="number" min="1"></label>
+      <label>Target price per unit, optional<input name="targetPrice" type="number" min="0" placeholder="e.g. 70000"></label>
+      <label>Delivery location<input name="deliveryLocation" required placeholder="e.g. Nsukka, Enugu State"></label>
+      <label>Needed by<input name="neededBy" type="date"></label>
+      <button class="primary full" value="default">Submit RFQ</button>
+    </form>
+  </dialog>
+
   <dialog id="supplierDialog" class="modal">
     <form method="dialog" id="supplierForm" class="modal-card">
       <button class="close" value="cancel" aria-label="Close">×</button>
@@ -118,9 +139,10 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <nav class="mobile-nav" aria-label="Mobile navigation">
+  <nav class="mobile-nav five" aria-label="Mobile navigation">
     <a href="#home">⌂<span>Home</span></a>
     <a href="#marketplace">▦<span>Market</span></a>
+    <a href="dashboard.html">▤<span>Dashboard</span></a>
     <button id="mobileSupplier">＋<span>Sell</span></button>
     <button id="mobileCart">🛒<span>Cart</span></button>
   </nav>
