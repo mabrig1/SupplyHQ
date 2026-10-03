@@ -18,62 +18,81 @@ function fmt(value){return "₦"+Number(value||0).toLocaleString("en-NG");}
 function metric(label,value,note){return '<article class="metric"><small>'+label+'</small><strong>'+value+'</strong><em>'+note+'</em></article>';}
 
 function supplierState(){
-  const profile = read("supplyhq-supplier",null);
-  const status = localStorage.getItem("supplyhq-supplier-status") || "Pending";
+  const profile=read("supplyhq-supplier",null);
+  const status=localStorage.getItem("supplyhq-supplier-status")||"Pending";
+  return {profile,status};
+}
+function companyState(){
+  const profile=read("supplyhq-company",null);
+  const status=localStorage.getItem("supplyhq-company-status")||"Draft";
   return {profile,status};
 }
 
 function render(){
-  const orders = read("supplyhq-orders",[]);
-  const rfqs = read("supplyhq-rfqs",[]);
-  const overrides = read("supplyhq-stock-overrides",{});
-  const inv = products.map(p=>({...p,stock:Number(overrides[p.id] ?? p.stock)}));
-  const low = inv.filter(p=>p.stock <= p.moq*3);
-  const supplier = supplierState();
+  const orders=read("supplyhq-orders",[]);
+  const rfqs=read("supplyhq-rfqs",[]);
+  const overrides=read("supplyhq-stock-overrides",{});
+  const inv=products.map(p=>({...p,stock:Number(overrides[p.id] ?? p.stock)}));
+  const low=inv.filter(p=>p.stock<=p.moq*3);
+  const supplier=supplierState();
+  const company=companyState();
+  const rate=Number(localStorage.getItem("supplyhq-commission-rate")||5);
 
-  document.getElementById("adminMetrics").innerHTML =
+  document.getElementById("adminMetrics").innerHTML=
     metric("Orders",orders.length,"Buyer-created records")+
     metric("RFQs",rfqs.length,"Bulk quote requests")+
     metric("Supplier applications",supplier.profile?1:0,supplier.status+" review")+
-    metric("Low-stock SKUs",low.length,"At or below 3× MOQ");
+    metric("Buyer companies",company.profile?1:0,company.status);
 
-  document.getElementById("supplierQueue").innerHTML = supplier.profile
+  document.getElementById("supplierQueue").innerHTML=supplier.profile
     ? '<div class="admin-card"><h4>'+supplier.profile.business+'</h4><p>'+supplier.profile.category+' • '+supplier.profile.location+'</p><p>'+supplier.profile.phone+' • Status: <b>'+supplier.status+'</b></p><div class="admin-actions"><button class="approve" onclick="setSupplierStatus(\'Approved\')">Approve</button><button onclick="setSupplierStatus(\'Needs Review\')">Needs review</button><button class="danger" onclick="setSupplierStatus(\'Rejected\')">Reject</button></div></div>'
     : '<div class="empty-state">No supplier application has been saved on this device.</div>';
 
-  document.getElementById("adminOrders").innerHTML = orders.length
-    ? orders.slice().reverse().map(o=>'<div class="admin-card"><h4>'+o.id+' • '+fmt(o.total)+'</h4><p>'+new Date(o.createdAt).toLocaleString()+' • '+o.status+'</p><div class="admin-actions"><button onclick="setOrderStatus(\''+o.id+'\',\'Confirmed\')">Confirm</button><button onclick="setOrderStatus(\''+o.id+'\',\'Delivered\')">Delivered</button></div></div>').join("")
+  document.getElementById("companyQueue").innerHTML=company.profile
+    ? '<div class="admin-card"><h4>'+company.profile.name+'</h4><p>'+company.profile.segment+' • '+company.profile.location+'</p><p>'+(company.profile.email||"No email")+' • Status: <b>'+company.status+'</b></p><div class="admin-actions"><button class="approve" onclick="setCompanyStatus(\'Approved\')">Approve</button><button onclick="setCompanyStatus(\'Needs Review\')">Needs review</button><button class="danger" onclick="setCompanyStatus(\'Rejected\')">Reject</button></div></div>'
+    : '<div class="empty-state">No buyer company profile has been submitted.</div>';
+
+  document.getElementById("commissionRate").value=rate;
+
+  document.getElementById("adminOrders").innerHTML=orders.length
+    ? orders.slice().reverse().map(o=>'<div class="admin-card"><h4>'+o.id+' • '+fmt(o.total)+'</h4><p>'+new Date(o.createdAt).toLocaleString()+' • '+o.status+'</p><p>'+((o.supplierSplits||[]).length||new Set((o.items||[]).map(i=>i.supplier)).size)+' supplier split(s)</p><div class="admin-actions"><button onclick="setOrderStatus(\''+o.id+'\',\'Confirmed\')">Confirm</button><button onclick="setOrderStatus(\''+o.id+'\',\'Delivered\')">Delivered</button></div></div>').join("")
     : '<div class="empty-state">No marketplace orders yet.</div>';
 
-  document.getElementById("adminRfqs").innerHTML = rfqs.length
-    ? rfqs.slice().reverse().map(r=>'<div class="admin-card"><h4>'+r.productName+'</h4><p>'+r.quantity+' '+r.unit+'s • '+r.deliveryLocation+'</p><p>Target: '+(r.targetPrice?fmt(r.targetPrice):"Open")+' • '+r.status+'</p><div class="admin-actions"><button onclick="setRfqStatus(\''+r.id+'\',\'Quoted\')">Mark quoted</button><button onclick="setRfqStatus(\''+r.id+'\',\'Closed\')">Close</button></div></div>').join("")
+  document.getElementById("adminRfqs").innerHTML=rfqs.length
+    ? rfqs.slice().reverse().map(r=>'<div class="admin-card"><h4>'+r.productName+'</h4><p>'+r.quantity+' '+r.unit+'s • '+r.deliveryLocation+'</p><p>Target: '+(r.targetPrice?fmt(r.targetPrice):"Open")+' • '+r.status+'</p><p>'+((r.messages||[]).length)+' negotiation message(s)</p><div class="admin-actions"><button onclick="setRfqStatus(\''+r.id+'\',\'Quoted\')">Mark quoted</button><button onclick="setRfqStatus(\''+r.id+'\',\'Closed\')">Close</button></div></div>').join("")
     : '<div class="empty-state">No RFQs yet.</div>';
 
-  document.getElementById("stockWatch").innerHTML = low.length
+  document.getElementById("stockWatch").innerHTML=low.length
     ? low.map(p=>'<div class="admin-card"><h4>'+p.name+'</h4><p>'+p.supplier+' • Stock '+p.stock+' • MOQ '+p.moq+'</p></div>').join("")
     : '<div class="empty-state">No products currently fall below the low-stock threshold.</div>';
 }
 
 function setSupplierStatus(status){
   localStorage.setItem("supplyhq-supplier-status",status);
-  toast("Supplier status set to "+status);
-  render();
+  toast("Supplier status set to "+status);render();
+}
+function setCompanyStatus(status){
+  localStorage.setItem("supplyhq-company-status",status);
+  toast("Company status set to "+status);render();
 }
 function setOrderStatus(id,status){
-  const data = read("supplyhq-orders",[]);
-  const row = data.find(o=>o.id===id);
-  if(row) row.status=status;
+  const data=read("supplyhq-orders",[]);
+  const row=data.find(o=>o.id===id);
+  if(row){
+    row.status=status;
+    if(Array.isArray(row.supplierSplits)){
+      row.supplierSplits=row.supplierSplits.map(split=>({...split,payoutStatus:status==="Delivered"?"Ready":"Pending"}));
+    }
+  }
   write("supplyhq-orders",data);
-  toast("Order "+id+" marked "+status);
-  render();
+  toast("Order "+id+" marked "+status);render();
 }
 function setRfqStatus(id,status){
-  const data = read("supplyhq-rfqs",[]);
-  const row = data.find(r=>r.id===id);
+  const data=read("supplyhq-rfqs",[]);
+  const row=data.find(r=>r.id===id);
   if(row) row.status=status;
   write("supplyhq-rfqs",data);
-  toast("RFQ marked "+status);
-  render();
+  toast("RFQ marked "+status);render();
 }
 function toast(message){
   const node=document.getElementById("toast");
@@ -81,4 +100,13 @@ function toast(message){
   clearTimeout(window.__adminToast);
   window.__adminToast=setTimeout(()=>node.classList.remove("show"),2200);
 }
+
+document.getElementById("commissionForm").addEventListener("submit",event=>{
+  event.preventDefault();
+  const value=Math.max(0,Math.min(30,Number(document.getElementById("commissionRate").value||0)));
+  localStorage.setItem("supplyhq-commission-rate",String(value));
+  toast("Commission rate updated to "+value+"%");
+  render();
+});
+
 render();
