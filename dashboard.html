@@ -15,7 +15,9 @@
       <span><strong>SupplyHQ</strong><small>Operations dashboard</small></span>
     </a>
     <div class="top-actions">
-      <a class="ghost dashboard-link" href="admin.html">Admin demo</a>\n      <a class="ghost dashboard-link" href="index.html">Marketplace</a>
+      <a class="ghost dashboard-link" href="procurement.html">Procurement</a>
+      <a class="ghost dashboard-link" href="admin.html">Admin demo</a>
+      <a class="ghost dashboard-link" href="index.html">Marketplace</a>
       <button class="cart-btn" id="resetDemo">Reset demo</button>
     </div>
   </header>
@@ -34,7 +36,9 @@
         <button data-view="rfqs">RFQs</button>
         <button data-view="saved">Saved goods</button>
         <button data-view="inventory" data-supplier-only>Inventory</button>
+        <button data-view="payouts" data-supplier-only>Payouts</button>
       </nav>
+      <a href="procurement.html" class="outline dash-side-link" data-buyer-only>Procurement hub</a>
       <a href="index.html#marketplace" class="primary dash-market-link">Browse market</a>
     </aside>
 
@@ -63,14 +67,14 @@
 
       <section id="ordersView" class="dash-view">
         <article class="panel">
-          <div class="panel-head"><h3>Order history</h3><span class="muted">Orders created from the marketplace are stored on this device.</span></div>
+          <div class="panel-head"><h3>Order history</h3><span class="muted">Multi-supplier orders retain seller-level settlement splits.</span></div>
           <div id="ordersTable"></div>
         </article>
       </section>
 
       <section id="rfqsView" class="dash-view">
         <article class="panel">
-          <div class="panel-head"><h3>Request for quotation</h3><span class="muted">Track volume requests before committing to an order.</span></div>
+          <div class="panel-head"><h3>Request for quotation</h3><a href="procurement.html">Open Quote Desk</a></div>
           <div id="rfqTable"></div>
         </article>
       </section>
@@ -86,6 +90,17 @@
         <article class="panel">
           <div class="panel-head"><h3>Inventory controls</h3><span class="muted">Demo supplier controls update stock shown on the marketplace.</span></div>
           <div id="inventoryTable"></div>
+        </article>
+      </section>
+
+      <section id="payoutsView" class="dash-view">
+        <article class="panel">
+          <div class="panel-head">
+            <div><h3>Supplier settlements</h3><span class="muted">Estimated commission and payout ledger from marketplace orders.</span></div>
+            <select id="supplierIdentity"></select>
+          </div>
+          <div id="payoutSummary" class="metric-grid mini-metrics"></div>
+          <div id="payoutTable"></div>
         </article>
       </section>
     </section>
