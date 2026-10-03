@@ -10,3 +10,9 @@
 .admin-actions .danger{color:#a33}
 @media(max-width:900px){.admin-grid{grid-template-columns:1fr}}
 @media(max-width:640px){.admin-shell{padding:24px 15px 50px}}
+.commission-form{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end}
+.commission-form label{font-size:12px;font-weight:800}
+.commission-form input{display:block;width:100%;margin-top:6px;border:1px solid var(--line);border-radius:9px;padding:10px}
+.commission-form button{margin:0}
+.small{font-size:12px}
+@media(max-width:640px){.commission-form{grid-template-columns:1fr}}
