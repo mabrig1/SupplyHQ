@@ -1,0 +1,12 @@
+.admin-shell{padding:36px clamp(18px,5vw,70px) 70px}
+.admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.admin-card{padding:14px;border:1px solid var(--line);border-radius:14px;margin-bottom:10px;background:#fafbf8}
+.admin-card:last-child{margin-bottom:0}
+.admin-card h4{margin:0 0 5px}
+.admin-card p{margin:3px 0;color:var(--muted);font-size:12px}
+.admin-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.admin-actions button{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 10px;font-weight:800}
+.admin-actions .approve{background:var(--green);border-color:var(--green);color:#fff}
+.admin-actions .danger{color:#a33}
+@media(max-width:900px){.admin-grid{grid-template-columns:1fr}}
+@media(max-width:640px){.admin-shell{padding:24px 15px 50px}}
