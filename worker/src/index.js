@@ -222,6 +222,14 @@ function routeMatch(pathname, pattern) {
   return params;
 }
 
+async function getCommissionRate(env) {
+  try {
+    const row = await env.DB.prepare("SELECT value FROM settings WHERE key='commission_rate'").first();
+    if (row && row.value !== undefined) return Math.max(0, Math.min(30, Number(row.value)));
+  } catch {}
+  return Math.max(0, Math.min(30, Number(env.COMMISSION_RATE || 5)));
+}
+
 function tierPrice(product, qty) {
   let tiers = [];
   try { tiers = JSON.parse(product.tiers_json || "[]"); } catch {}
@@ -285,7 +293,7 @@ async function createOrder(request, env, user) {
   }
 
   const orderId = "SHQ-" + Date.now().toString().slice(-7) + "-" + crypto.randomUUID().slice(0,4).toUpperCase();
-  const commissionRate = Math.max(0, Math.min(30, Number(env.COMMISSION_RATE || 5)));
+  const commissionRate = await getCommissionRate(env);
   const statements = [
     env.DB.prepare(
       "INSERT INTO orders (id,buyer_id,total,status,idempotency_key,created_at) VALUES (?,?,?,'Pending',?,datetime('now'))"
@@ -662,6 +670,42 @@ async function handler(request, env) {
       orders:Number(orders.n), orderValue:Number(orders.total), openRfqs:Number(rfqs.n),
       pendingSuppliers:Number(suppliers.n), pendingCompanies:Number(companies.n)
     }});
+  }
+
+  if (method === "GET" && path === "/api/admin/companies") {
+    await requireAuth(request,env,["admin"]);
+    const result = await env.DB.prepare(
+      "SELECT c.*,u.email AS owner_email FROM companies c JOIN users u ON u.id=c.owner_user_id ORDER BY c.created_at DESC LIMIT 200"
+    ).all();
+    return json({ companies:result.results || [] });
+  }
+
+  const companyStatus = routeMatch(path,"/api/admin/companies/:id/status");
+  if (method === "PATCH" && companyStatus) {
+    const admin = await requireAuth(request,env,["admin"]);
+    const input = await bodyJson(request);
+    const status = ["Approved","Needs Review","Rejected","Pending"].includes(input.status) ? input.status : null;
+    if (!status) throw Object.assign(new Error("Invalid company status"),{status:400});
+    await env.DB.prepare("UPDATE companies SET status=?,updated_at=datetime('now') WHERE id=?").bind(status,companyStatus.id).run();
+    await audit(env,admin.id,"company.status","company",companyStatus.id,{status});
+    return json({ ok:true,status });
+  }
+
+  if (method === "GET" && path === "/api/admin/settings/commission") {
+    await requireAuth(request,env,["admin"]);
+    return json({ commissionRate:await getCommissionRate(env) });
+  }
+
+  if (method === "PATCH" && path === "/api/admin/settings/commission") {
+    const admin = await requireAuth(request,env,["admin"]);
+    const input = await bodyJson(request);
+    const rate = toNumber(input.rate,0,30);
+    if (rate === null) throw Object.assign(new Error("Commission must be between 0 and 30"),{status:400});
+    await env.DB.prepare(
+      "INSERT INTO settings (key,value,updated_at) VALUES ('commission_rate',?,datetime('now')) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=datetime('now')"
+    ).bind(String(rate)).run();
+    await audit(env,admin.id,"settings.commission","settings","commission_rate",{rate});
+    return json({ ok:true,commissionRate:rate });
   }
 
   if (method === "GET" && path === "/api/admin/suppliers") {
