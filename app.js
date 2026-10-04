@@ -166,13 +166,19 @@ function openCart(){
     '<div class="cart-list">'+rows.map(cartRow).join("")+'</div>' +
     '<div class="cart-total"><span>Estimated goods total</span><span>'+fmt(total)+'</span></div>' +
     '<p class="muted">Delivery cost and final stock confirmation are handled before payment. Placing the order creates a dashboard record.</p>' +
-    '<button class="primary full" onclick="placeOrder()">Create order & prepare WhatsApp text</button></div>';
+    '<button class="primary full" onclick="placeOrder(false)">Create order & prepare WhatsApp text</button>' +
+    '<button class="outline full" onclick="placeOrder(true)">Create order & pay with Paystack</button></div>';
   if(!cartDialog.open) cartDialog.showModal();
 }
 
-async function placeOrder(){
+async function placeOrder(payNow=false){
   const rows = cartRows();
   if(!rows.length) return;
+  if(payNow && (!window.SupplyHQAPI || !window.SupplyHQAPI.token())){
+    toast("Sign in before starting a secure payment");
+    setTimeout(()=>{ window.location.href="account.html"; },700);
+    return;
+  }
   const total = rows.reduce((sum,row)=>sum+row.final*row.qty,0);
   const now = new Date();
   const commissionRate = Number(localStorage.getItem("supplyhq-commission-rate") || 5);
@@ -215,6 +221,22 @@ async function placeOrder(){
 
   const lines = rows.map(row=>"• "+row.name+": "+row.qty+" "+row.unit+"s @ "+fmt(row.final));
   const msg = "Hello, I want to place SupplyHQ order "+finalOrder.id+":\n\n"+lines.join("\n")+"\n\nEstimated goods total: "+fmt(finalOrder.total || total)+"\nPlease confirm stock, delivery and payment details.";
+
+  if(payNow){
+    try{
+      const payment=await window.SupplyHQAPI.initializePayment(finalOrder.id);
+      if(payment && payment.payment && payment.payment.authorization_url){
+        cart=[];
+        saveCart();
+        cartDialog.close();
+        window.location.href=payment.payment.authorization_url;
+        return;
+      }
+    }catch(error){
+      toast(error.message || "Payment could not be started");
+      return;
+    }
+  }
 
   cart = [];
   saveCart();
