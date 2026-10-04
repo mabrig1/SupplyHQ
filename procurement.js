@@ -1,4 +1,4 @@
-const products = [
+let products = [
   {id:1,sku:"RICE-PB50",name:"Premium Parboiled Rice",unit:"50kg bag",price:74000,moq:5,supplier:"Eastern Grain Depot"},
   {id:2,sku:"RICE-OF25",name:"Local Ofada Rice",unit:"25kg bag",price:54500,moq:4,supplier:"Green Basket Foods"},
   {id:3,sku:"PALM-25L",name:"Red Palm Oil",unit:"25L keg",price:42000,moq:3,supplier:"Niger Delta Oils"},
@@ -20,6 +20,66 @@ function write(key,value){localStorage.setItem(key,JSON.stringify(value));}
 function fmt(value){return "₦"+Number(value||0).toLocaleString("en-NG");}
 function productBySku(sku){return products.find(p=>p.sku===String(sku||"").trim().toUpperCase());}
 function productById(id){return products.find(p=>p.id===Number(id));}
+
+async function syncRemoteProcurement(){
+  if(!window.SupplyHQAPI) return;
+  try{
+    const productData=await window.SupplyHQAPI.products();
+    if(Array.isArray(productData.products) && productData.products.length){
+      products=productData.products.map(p=>({
+        id:p.id,sku:p.sku,name:p.name,unit:p.unit,price:Number(p.price),moq:Number(p.moq),supplier:p.supplier
+      }));
+      renderQuickRows();
+      renderSkuHelp();
+    }
+  }catch(error){}
+
+  if(!window.SupplyHQAPI.token()) return;
+  try{
+    const [rfqData,poData,companyData]=await Promise.all([
+      window.SupplyHQAPI.rfqs(),
+      window.SupplyHQAPI.purchaseOrders(),
+      window.SupplyHQAPI.company()
+    ]);
+    if(Array.isArray(rfqData.rfqs)){
+      const mapped=rfqData.rfqs.map(r=>({
+        ...r,
+        productId:r.product_id||r.productId,
+        productName:r.product_name||r.productName,
+        supplier:r.supplier_name||r.supplier,
+        targetPrice:Number(r.target_price||r.targetPrice||0),
+        deliveryLocation:r.delivery_location||r.deliveryLocation,
+        neededBy:r.needed_by||r.neededBy||"",
+        createdAt:r.created_at||r.createdAt,
+        messages:r.messages||[]
+      }));
+      write("supplyhq-rfqs",mapped);
+      renderQuotes();
+    }
+    if(Array.isArray(poData.purchaseOrders)){
+      write("supplyhq-purchase-orders",poData.purchaseOrders.map(p=>({
+        ...p,
+        poNumber:p.po_number||p.poNumber,
+        orderId:p.order_id||p.orderId,
+        createdAt:p.created_at||p.createdAt,
+        total:Number(p.total||0)
+      })));
+      renderPOs();
+    }
+    if(companyData.company){
+      write("supplyhq-company",{
+        name:companyData.company.name,
+        segment:companyData.company.segment,
+        location:companyData.company.location,
+        email:companyData.company.email
+      });
+      localStorage.setItem("supplyhq-company-status",companyData.company.status||"Pending");
+      renderCompany();
+    }
+  }catch(error){
+    console.warn("SupplyHQ procurement sync unavailable.");
+  }
+}
 
 function toast(message){
   const node=document.getElementById("toast");
@@ -149,14 +209,14 @@ function renderPOs(){
   }).join("");
 }
 
-function generatePO(orderId){
+async function generatePO(orderId){
   const orders=read("supplyhq-orders",[]);
   const order=orders.find(o=>o.id===orderId);
   if(!order) return;
   const pos=read("supplyhq-purchase-orders",[]);
   if(pos.some(p=>p.orderId===orderId)) return;
   const company=read("supplyhq-company",{name:"Buyer Company",location:""});
-  const po={
+  let po={
     id:"PO-"+Date.now(),
     poNumber:"SHQ-PO-"+String(Date.now()).slice(-6),
     orderId,
@@ -165,6 +225,20 @@ function generatePO(orderId){
     total:order.total,
     items:order.items||[]
   };
+  if(window.SupplyHQAPI && window.SupplyHQAPI.token()){
+    try{
+      const remote=await window.SupplyHQAPI.createPurchaseOrder(orderId);
+      if(remote && remote.purchaseOrder){
+        po={...po,...remote.purchaseOrder,
+          poNumber:remote.purchaseOrder.po_number||remote.purchaseOrder.poNumber||po.poNumber,
+          orderId:remote.purchaseOrder.order_id||remote.purchaseOrder.orderId||orderId,
+          createdAt:remote.purchaseOrder.created_at||remote.purchaseOrder.createdAt||po.createdAt
+        };
+      }
+    }catch(error){
+      toast("Purchase order saved locally; API sync pending");
+    }
+  }
   pos.push(po);
   write("supplyhq-purchase-orders",pos);
   renderPOs();
@@ -227,7 +301,7 @@ document.getElementById("nameListForm").addEventListener("submit",event=>{
   renderLists();
   toast("Requisition list saved");
 });
-document.getElementById("quoteMessageForm").addEventListener("submit",event=>{
+document.getElementById("quoteMessageForm").addEventListener("submit",async event=>{
   event.preventDefault();
   if(!activeRfqId){toast("Select an RFQ first");return;}
   const rfqs=read("supplyhq-rfqs",[]);
@@ -237,16 +311,33 @@ document.getElementById("quoteMessageForm").addEventListener("submit",event=>{
   const actor=document.getElementById("quoteActor").value;
   const amount=Number(document.getElementById("quoteAmount").value||0);
   const message=document.getElementById("quoteMessage").value.trim();
-  rfq.messages.push({actor,amount,message,createdAt:new Date().toISOString()});
+  const localMessage={actor,amount,message,createdAt:new Date().toISOString()};
+  if(window.SupplyHQAPI && window.SupplyHQAPI.token()){
+    try{
+      await window.SupplyHQAPI.addRfqMessage(activeRfqId,{message,amount});
+    }catch(error){
+      toast("Message saved locally; API sync pending");
+    }
+  }
+  rfq.messages.push(localMessage);
   if(actor==="Supplier" && amount) rfq.status="Quoted";
   write("supplyhq-rfqs",rfqs);
   event.currentTarget.reset();
   renderQuotes();
   toast("Negotiation message added");
 });
-document.getElementById("companyForm").addEventListener("submit",event=>{
+document.getElementById("companyForm").addEventListener("submit",async event=>{
   event.preventDefault();
-  write("supplyhq-company",Object.fromEntries(new FormData(event.currentTarget)));
+  const company=Object.fromEntries(new FormData(event.currentTarget));
+  write("supplyhq-company",company);
+  if(window.SupplyHQAPI && window.SupplyHQAPI.token()){
+    try{
+      const remote=await window.SupplyHQAPI.saveCompany(company);
+      if(remote && remote.company) localStorage.setItem("supplyhq-company-status",remote.company.status||"Pending");
+    }catch(error){
+      toast("Company saved locally; API sync pending");
+    }
+  }
   if(!localStorage.getItem("supplyhq-company-status")) localStorage.setItem("supplyhq-company-status","Pending approval");
   renderCompany();toast("Company profile saved");
 });
@@ -265,3 +356,4 @@ renderLists();
 renderQuotes();
 renderPOs();
 renderCompany();
+syncRemoteProcurement();
