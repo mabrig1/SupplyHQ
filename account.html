@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f5a3a">
+  <title>SupplyHQ Account</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="account.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">S</span>
+      <span><strong>SupplyHQ</strong><small>Secure account access</small></span>
+    </a>
+    <div class="top-actions">
+      <a class="ghost dashboard-link" href="index.html">Marketplace</a>
+      <a class="ghost dashboard-link" href="dashboard.html">Dashboard</a>
+    </div>
+  </header>
+
+  <main class="account-shell">
+    <section class="account-intro">
+      <span class="eyebrow">SUPPLYHQ ACCOUNT</span>
+      <h1>One account for buying and supplying.</h1>
+      <p>Sign in to sync orders, RFQs and supplier records through the SupplyHQ API. Passwords are sent only over HTTPS to the API and are never stored in GitHub Pages code.</p>
+      <div class="security-points">
+        <span>✓ API secrets stay server-side</span>
+        <span>✓ Passwords are hashed before database storage</span>
+        <span>✓ Admin routes require server-side authorization</span>
+      </div>
+      <div id="apiStatus" class="api-status">Checking API…</div>
+    </section>
+
+    <section class="account-card">
+      <div id="signedOut">
+        <div class="account-tabs">
+          <button class="active" data-auth-tab="login">Sign in</button>
+          <button data-auth-tab="register">Create account</button>
+        </div>
+
+        <form id="loginForm" class="auth-form active">
+          <h2>Sign in</h2>
+          <label>Email<input type="email" name="email" autocomplete="email" required></label>
+          <label>Password<input type="password" name="password" autocomplete="current-password" required minlength="10"></label>
+          <label class="remember"><input type="checkbox" name="remember"> Keep me signed in on this device</label>
+          <button class="primary full">Sign in</button>
+        </form>
+
+        <form id="registerForm" class="auth-form">
+          <h2>Create account</h2>
+          <label>Email<input type="email" name="email" autocomplete="email" required></label>
+          <label>Password<input type="password" name="password" autocomplete="new-password" required minlength="10" maxlength="128"></label>
+          <label>Account type
+            <select name="role">
+              <option value="buyer">Buyer / retailer</option>
+              <option value="supplier">Supplier / wholesaler</option>
+            </select>
+          </label>
+          <label class="remember"><input type="checkbox" name="remember"> Keep me signed in on this device</label>
+          <button class="primary full">Create account</button>
+        </form>
+      </div>
+
+      <div id="signedIn" hidden>
+        <span class="eyebrow">SIGNED IN</span>
+        <h2 id="accountEmail"></h2>
+        <div class="account-meta">
+          <div><small>ROLE</small><strong id="accountRole"></strong></div>
+          <div><small>STATUS</small><strong id="accountState">Active</strong></div>
+        </div>
+        <div class="account-actions">
+          <a class="primary" href="dashboard.html">Open dashboard</a>
+          <a class="outline" href="procurement.html">Procurement</a>
+          <button class="outline" id="logoutBtn">Sign out</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="api-client.js"></script>
+  <script src="account.js" defer></script>
+</body>
+</html>
