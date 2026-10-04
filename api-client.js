@@ -151,6 +151,22 @@
     return request("/api/admin/suppliers");
   }
 
+  async function adminCompanies() {
+    return request("/api/admin/companies");
+  }
+
+  async function setCompanyStatus(id, status) {
+    return request("/api/admin/companies/" + encodeURIComponent(id) + "/status", { method: "PATCH", body: { status } });
+  }
+
+  async function getCommission() {
+    return request("/api/admin/settings/commission");
+  }
+
+  async function setCommission(rate) {
+    return request("/api/admin/settings/commission", { method: "PATCH", body: { rate } });
+  }
+
   async function setSupplierStatus(id, status) {
     return request("/api/admin/suppliers/" + encodeURIComponent(id) + "/status", { method: "PATCH", body: { status } });
   }
@@ -189,6 +205,10 @@
     initializePayment,
     adminSummary,
     adminSuppliers,
+    adminCompanies,
+    setCompanyStatus,
+    getCommission,
+    setCommission,
     setSupplierStatus,
     setOrderStatus,
     setRfqStatus
