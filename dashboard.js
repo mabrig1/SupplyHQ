@@ -26,6 +26,48 @@ function productsWithOverrides(){
 function orders(){ return read("supplyhq-orders", []); }
 function rfqs(){ return read("supplyhq-rfqs", []); }
 function savedIds(){ return read("supplyhq-saved", []); }
+
+async function syncRemoteData(){
+  if(!window.SupplyHQAPI || !window.SupplyHQAPI.token()) return;
+  try{
+    const [orderData,rfqData] = await Promise.all([
+      window.SupplyHQAPI.orders(),
+      window.SupplyHQAPI.rfqs()
+    ]);
+    if(Array.isArray(orderData.orders)){
+      const local=orders();
+      const byId=new Map(local.map(o=>[o.id,o]));
+      orderData.orders.forEach(o=>{
+        const existing=byId.get(o.id)||{};
+        byId.set(o.id,{...existing,...o,total:Number(o.total),createdAt:o.created_at||o.createdAt});
+      });
+      write("supplyhq-orders",[...byId.values()]);
+    }
+    if(Array.isArray(rfqData.rfqs)){
+      const local=rfqs();
+      const byId=new Map(local.map(r=>[r.id,r]));
+      rfqData.rfqs.forEach(r=>{
+        const existing=byId.get(r.id)||{};
+        byId.set(r.id,{
+          ...existing,
+          ...r,
+          productName:r.product_name||r.productName,
+          supplier:r.supplier_name||r.supplier,
+          targetPrice:Number(r.target_price||r.targetPrice||0),
+          deliveryLocation:r.delivery_location||r.deliveryLocation,
+          neededBy:r.needed_by||r.neededBy||"",
+          createdAt:r.created_at||r.createdAt,
+          messages:r.messages||existing.messages||[]
+        });
+      });
+      write("supplyhq-rfqs",[...byId.values()]);
+    }
+    renderAll();
+syncRemoteData();
+  }catch(error){
+    console.warn("SupplyHQ dashboard remote sync unavailable.");
+  }
+}
 function commissionRate(){ return Number(localStorage.getItem("supplyhq-commission-rate") || 5); }
 
 function statusClass(status){
