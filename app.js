@@ -1,4 +1,4 @@
-const baseProducts = [
+let baseProducts = [
   {id:1,name:"Premium Parboiled Rice",category:"Grains",emoji:"🍚",supplier:"Eastern Grain Depot",location:"Onitsha",price:74000,unit:"50kg bag",moq:5,stock:120,rating:4.8,tiers:[[5,74000],[20,72500],[50,71000]]},
   {id:2,name:"Local Ofada Rice",category:"Grains",emoji:"🌾",supplier:"Green Basket Foods",location:"Abeokuta",price:54500,unit:"25kg bag",moq:4,stock:68,rating:4.7,tiers:[[4,54500],[15,53000],[40,51500]]},
   {id:3,name:"Red Palm Oil",category:"Oils",emoji:"🫙",supplier:"Niger Delta Oils",location:"Port Harcourt",price:42000,unit:"25L keg",moq:3,stock:92,rating:4.9,tiers:[[3,42000],[10,40500],[30,39000]]},
@@ -22,6 +22,19 @@ let saved = read("supplyhq-saved", []);
 function products(){
   const overrides = read("supplyhq-stock-overrides", {});
   return baseProducts.map(product => ({...product, stock:Number(overrides[product.id] ?? product.stock)}));
+}
+
+async function syncProductsFromApi(){
+  if(!window.SupplyHQAPI) return;
+  try{
+    const data = await window.SupplyHQAPI.products();
+    if(Array.isArray(data.products) && data.products.length){
+      baseProducts = data.products;
+      renderProducts();
+    }
+  }catch(error){
+    console.warn("SupplyHQ API unavailable; using local product catalogue.");
+  }
 }
 
 const grid = document.getElementById("productGrid");
@@ -157,7 +170,7 @@ function openCart(){
   if(!cartDialog.open) cartDialog.showModal();
 }
 
-function placeOrder(){
+async function placeOrder(){
   const rows = cartRows();
   if(!rows.length) return;
   const total = rows.reduce((sum,row)=>sum+row.final*row.qty,0);
@@ -185,12 +198,23 @@ function placeOrder(){
     items:rows.map(row=>({id:row.id,name:row.name,qty:row.qty,unit:row.unit,price:row.final,supplier:row.supplier})),
     supplierSplits
   };
+  let finalOrder = order;
+  if(window.SupplyHQAPI && window.SupplyHQAPI.token()){
+    try{
+      const remote = await window.SupplyHQAPI.createOrder(rows.map(row=>({productId:row.id,qty:row.qty})));
+      if(remote && remote.order){
+        finalOrder = {...order,...remote.order,items:order.items,supplierSplits:order.supplierSplits};
+      }
+    }catch(error){
+      toast("API order sync failed — saved locally");
+    }
+  }
   const orderData = read("supplyhq-orders",[]);
-  orderData.push(order);
+  orderData.push(finalOrder);
   write("supplyhq-orders",orderData);
 
   const lines = rows.map(row=>"• "+row.name+": "+row.qty+" "+row.unit+"s @ "+fmt(row.final));
-  const msg = "Hello, I want to place SupplyHQ order "+order.id+":\n\n"+lines.join("\n")+"\n\nEstimated goods total: "+fmt(total)+"\nPlease confirm stock, delivery and payment details.";
+  const msg = "Hello, I want to place SupplyHQ order "+finalOrder.id+":\n\n"+lines.join("\n")+"\n\nEstimated goods total: "+fmt(finalOrder.total || total)+"\nPlease confirm stock, delivery and payment details.";
 
   cart = [];
   saveCart();
@@ -237,22 +261,32 @@ document.querySelectorAll('[data-scroll="marketplace"]').forEach(button=>button.
 ["cartBtn","mobileCart"].forEach(id=>document.getElementById(id).addEventListener("click",openCart));
 ["supplierBtn","supplierBtn2","mobileSupplier"].forEach(id=>document.getElementById(id).addEventListener("click",()=>supplierDialog.showModal()));
 
-document.getElementById("supplierForm").addEventListener("submit",event=>{
+document.getElementById("supplierForm").addEventListener("submit",async event=>{
   if(event.submitter && event.submitter.value==="cancel") return;
   const data = Object.fromEntries(new FormData(event.currentTarget));
   write("supplyhq-supplier",data);
   localStorage.setItem("supplyhq-role","supplier");
-  setTimeout(()=>toast("Supplier profile saved — dashboard ready"),100);
+  if(window.SupplyHQAPI && window.SupplyHQAPI.token()){
+    try{
+      await window.SupplyHQAPI.createSupplier(data);
+      setTimeout(()=>toast("Supplier profile synced for verification"),100);
+      return;
+    }catch(error){
+      setTimeout(()=>toast("Supplier profile saved locally; API sync pending"),100);
+      return;
+    }
+  }
+  setTimeout(()=>toast("Supplier profile saved locally — sign in to sync"),100);
 });
 
-document.getElementById("rfqForm").addEventListener("submit",event=>{
+document.getElementById("rfqForm").addEventListener("submit",async event=>{
   if(event.submitter && event.submitter.value==="cancel") return;
   event.preventDefault();
   const form = Object.fromEntries(new FormData(event.currentTarget));
   const product = getProduct(form.productId);
   if(!product) return;
   const rfqData = read("supplyhq-rfqs",[]);
-  rfqData.push({
+  let rfq = {
     id:"RFQ-"+String(Date.now()).slice(-7),
     productId:product.id,
     productName:product.name,
@@ -264,7 +298,22 @@ document.getElementById("rfqForm").addEventListener("submit",event=>{
     neededBy:form.neededBy||"",
     status:"Open",
     createdAt:new Date().toISOString()
-  });
+  };
+  if(window.SupplyHQAPI && window.SupplyHQAPI.token()){
+    try{
+      const remote = await window.SupplyHQAPI.createRfq({
+        productId:product.id,
+        quantity:rfq.quantity,
+        targetPrice:rfq.targetPrice,
+        deliveryLocation:rfq.deliveryLocation,
+        neededBy:rfq.neededBy
+      });
+      if(remote && remote.rfq) rfq = {...rfq,...remote.rfq};
+    }catch(error){
+      toast("RFQ saved locally; API sync pending");
+    }
+  }
+  rfqData.push(rfq);
   write("supplyhq-rfqs",rfqData);
   rfqDialog.close();
   event.currentTarget.reset();
@@ -273,6 +322,7 @@ document.getElementById("rfqForm").addEventListener("submit",event=>{
 
 saveCart();
 renderProducts();
+syncProductsFromApi();
 
 window.addEventListener("storage",renderProducts);
 
