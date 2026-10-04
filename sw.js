@@ -1,5 +1,5 @@
-const CACHE = "supplyhq-v4";
-const ASSETS = ["./","./index.html","./dashboard.html","./procurement.html","./admin.html","./styles.css","./enhancements.css","./dashboard.css","./procurement.css","./admin.css","./app.js","./dashboard.js","./procurement.js","./admin.js","./manifest.webmanifest"];
+const CACHE = "supplyhq-v5";
+const ASSETS = ["./","./index.html","./dashboard.html","./procurement.html","./account.html","./admin.html","./styles.css","./enhancements.css","./dashboard.css","./procurement.css","./account.css","./admin.css","./api-client.js","./app.js","./dashboard.js","./procurement.js","./account.js","./admin.js","./manifest.webmanifest"];
 
 self.addEventListener("install", function(event){
   event.waitUntil(caches.open(CACHE).then(function(cache){ return cache.addAll(ASSETS); }));
