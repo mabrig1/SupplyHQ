@@ -63,7 +63,6 @@ async function syncRemoteData(){
       write("supplyhq-rfqs",[...byId.values()]);
     }
     renderAll();
-syncRemoteData();
   }catch(error){
     console.warn("SupplyHQ dashboard remote sync unavailable.");
   }
@@ -253,3 +252,4 @@ document.getElementById("resetDemo").addEventListener("click",()=>{
 });
 
 renderAll();
+syncRemoteData();
