@@ -156,6 +156,14 @@ CREATE TABLE IF NOT EXISTS payments (
   FOREIGN KEY (buyer_id) REFERENCES users(id) ON DELETE RESTRICT
 );
 
+CREATE TABLE IF NOT EXISTS settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+INSERT OR IGNORE INTO settings (key,value) VALUES ('commission_rate','5');
+
 CREATE TABLE IF NOT EXISTS audit_logs (
   id TEXT PRIMARY KEY,
   actor_id TEXT,
