@@ -33,6 +33,8 @@ jobs:
           node --check seller.js
           node --check stores.js
           node --check store.js
+          node --check ai-studio.js
+          node scripts/validate-agent-studio.cjs
           node scripts/validate-multivendor.cjs
           node scripts/validate-phones-catalog.cjs
 
@@ -40,3 +42,5 @@ jobs:
         run: |
           node --check worker/src/index.js
           node --check worker/src/marketplace.js
+          node --check worker/src/agent-core.js
+          node --check worker/src/agent-api.js
