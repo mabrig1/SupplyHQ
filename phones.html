@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#11172d">
+  <meta name="description" content="Shop MABRIG Phones: phones, charging accessories, earbuds, power banks, portable fans and more. Browse Nigerian naira prices and request availability.">
+  <title>MABRIG Phones & Accessories | SupplyHQ</title>
+  <link rel="stylesheet" href="phones.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="./" class="logo" aria-label="SupplyHQ home"><span class="logo-mark">M</span><span><strong>MABRIG</strong><small>PHONES & ACCESSORIES</small></span></a>
+    <nav aria-label="Main navigation"><a href="./">SupplyHQ</a><a href="#catalog">Shop accessories</a><a href="#how-it-works">How to order</a></nav>
+    <button class="quote-button" id="openEnquiry" type="button">Enquiry list <span id="quoteCount">0</span></button>
+  </header>
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-content">
+        <div class="eyebrow">NEW AT SUPPLYHQ · MABRIG PHONES</div>
+        <h1 id="hero-title">Tech essentials.<br><em>Better connections.</em></h1>
+        <p>Explore power banks, headphones, chargers, smartphones, handy fans and more. Find the accessories you need — all in one simple catalogue.</p>
+        <div class="hero-cta"><a class="primary" href="#catalog">Explore the collection <span aria-hidden="true">↗</span></a><a href="#how-it-works" class="secondary">How enquiries work</a></div>
+        <div class="hero-stats"><span><b id="catalogTotal">115</b><small>Photos listed</small></span><span><b>₦</b><small>Prices in naira</small></span><span><b>30%</b><small>Retail adjustment applied</small></span></div>
+      </div>
+      <div class="hero-art" aria-hidden="true"><div class="shine"></div><div class="phone-frame"><div class="phone-screen"><span class="inner-brand">MABRIG</span><strong>READY<br>FOR MORE</strong><span class="screen-circles"></span><span class="screen-bottom">Phones • Audio • Power</span></div></div><div class="floating-tag tag-one">⚡ POWER</div><div class="floating-tag tag-two">♪ AUDIO</div><div class="floating-tag tag-three">▣ ACCESSORIES</div></div>
+    </section>
+
+    <section class="catalog" id="catalog">
+      <div class="catalog-heading"><div><div class="eyebrow dark">EXPLORE THE COLLECTION</div><h2>Find your next essential.</h2><p>Photos shown where available. Product availability, variants and final delivery cost must be confirmed before payment.</p></div><span class="count-chip" id="showingCount">0 products</span></div>
+      <div class="toolbar">
+        <label class="search-box"><span aria-hidden="true">⌕</span><span class="sr-only">Search products</span><input type="search" id="productSearch" placeholder="Search earbuds, power bank, charger..." autocomplete="off"></label>
+        <label class="sort-label">Sort <select id="sortProducts"><option value="recent">Latest first</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option><option value="name">Name A–Z</option></select></label>
+      </div>
+      <div class="categories" id="categories" role="group" aria-label="Filter by category"></div>
+      <div class="product-grid" id="productGrid" aria-live="polite"></div>
+      <div class="empty" id="emptyMessage" hidden>No matches found. Try a different category or search.</div>
+    </section>
+    <section class="info-section" id="how-it-works"><div><div class="eyebrow dark">SHOP WITH CONFIDENCE</div><h2>Pick. Enquire. Confirm.</h2><p>This is a product-enquiry catalogue. It does not claim live inventory or process payments.</p></div><ol><li><b>01</b><span>Browse and choose products</span></li><li><b>02</b><span>Add products to your enquiry list</span></li><li><b>03</b><span>Copy or share your enquiry for stock and delivery confirmation</span></li></ol></section>
+  </main>
+  <footer><div><b>MABRIG PHONES</b><small>A collection on SupplyHQ</small></div><p>Prices can change. Supplier/manufacturer names remain their own trademarks. Product photos may show multiple variants or bundles.</p><a href="./">← Back to SupplyHQ</a></footer>
+  <dialog id="enquiryDialog" aria-labelledby="enquiryTitle"><div class="dialog-head"><div><div class="eyebrow dark">YOUR ENQUIRY</div><h2 id="enquiryTitle">Products to confirm</h2></div><button type="button" id="closeEnquiry" aria-label="Close enquiry">×</button></div><div id="enquiryBody"></div><div class="dialog-actions"><button type="button" id="copyEnquiry">Copy enquiry text</button><button type="button" id="shareEnquiry">Share enquiry</button></div><p class="dialog-note">This is not an order confirmation. Prices exclude delivery; confirm the seller and stock before paying.</p></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="phones-catalog.js"></script><script src="phones.js" defer></script>
+</body>
+</html>
