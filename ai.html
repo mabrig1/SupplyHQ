@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101b34">
+<meta name="description" content="SupplyHQ AI Commerce Studio: buyer and seller specialists, verified catalogue insights and optional AI-assisted writing.">
+<title>AI Commerce Studio | SupplyHQ</title><link rel="stylesheet" href="marketplace.css"><link rel="stylesheet" href="ai-studio.css"></head>
+<body><header><a class="brand" href="index.html">Supply<span>HQ</span></a><nav aria-label="Navigation"><a href="index.html">MABRIG Phones</a><a href="stores.html">Explore stores</a><a href="sell.html">Seller Studio</a></nav></header>
+<main><section class="hero ai-hero"><div class="eyebrow">SUPPLYHQ · COMMERCE INTELLIGENCE</div><h1>Your AI Commerce Studio.</h1><p>Run real, inspectable agent workflows over available product data. Discover products, prepare enquiries, analyze your shop, and build evidence-grounded content — without letting an AI place orders or make payments.</p>
+<div class="hero-metrics"><div><b id="agentCount">28</b><small>Executable specialist workflows</small></div><div><b id="catalogCount">115</b><small>MABRIG catalogue photos</small></div><div><b>0</b><small>Unapproved automatic transactions</small></div></div>
+</section>
+<section class="panel"><div class="section-row"><div><div class="eyebrow dark">CHOOSE YOUR WORKSPACE</div><h2>Buyer and seller agents</h2></div><a class="outline" href="sell.html">Open my store</a></div>
+<div class="workspace-tabs" role="group" aria-label="Agent workspace"><button type="button" class="active" id="buyerTab" aria-pressed="true">Shopping assistants</button><button type="button" id="sellerTab" aria-pressed="false">Seller assistants</button></div>
+<div id="availability" class="message" role="status" aria-live="polite">Loading catalogue and checking the marketplace backend…</div>
+<div id="agentGrid" class="agent-grid"></div></section>
+<section class="panel"><div class="eyebrow dark">WORKFLOW RUNNER</div><h2 id="selectedTitle">Select an agent</h2><p id="selectedPurpose" class="muted"></p>
+<form id="agentForm"><div class="form-grid">
+<label class="wide">What would you like help with?<input name="query" id="agentQuery" placeholder="e.g. affordable power banks or improve my product descriptions" maxlength="200"></label>
+<label>Budget in naira<input type="number" name="budget" min="1" max="1000000000" value="25000"></label>
+<label>Stock alert threshold<input type="number" name="threshold" min="0" max="1000" value="3"></label>
+<label>Target stock quantity<input type="number" name="target" min="1" max="100000" value="20"></label>
+<label>Product procurement cost (for margins)<input type="number" name="unitCost" min="0" step="0.01" placeholder="Optional"></label>
+<label class="wide">Focus on a product (optional)<select name="productId" id="focusProduct"><option value="">Auto-select from catalogue</option></select></label>
+</div><div class="actions"><button type="submit" class="primary" id="runBtn">Run agent</button><button id="copyResult" class="outline" type="button" disabled>Copy analysis</button></div></form>
+<section id="resultPanel" class="analysis-result" aria-live="polite"><div class="empty">Choose an agent above and click Run agent to get evidence-based results.</div></section>
+<section id="generationSection" hidden class="external-ai"><h3>Optional generative writing</h3><p>The standard workflow runs without paid APIs. You may optionally send the selected product's listing fields to OpenRouter to generate a revised draft. Your consent is required; credentials are never stored in this page.</p>
+<label class="optin"><input id="aiConsent" type="checkbox"> I agree to share this product's listing details with an external AI provider for one writing request.</label>
+<button id="generateDraft" type="button" class="outline">Generate AI draft (requires configured backend)</button><pre id="generatedText" hidden></pre></section>
+</section>
+<section class="panel"><h2>Transparent agent status</h2><p>These are deterministic tools with measurable inputs and outputs, plus an orchestrator that routes requests between specialists. They are not 28 independent language models or 28 autonomous employees. An optional server-side OpenRouter connection can enhance approved seller writing tasks after configuration.</p><p id="runtimeStatus" class="message">Browser demo uses the published 115-photo catalogue. Seller operations require your active Cloudflare API and signed-in supplier account.</p></section>
+</main><footer>SupplyHQ — powered by Mabrig Technologies. Agent recommendations are advisory; all payments, publication changes and merchant approvals remain human-controlled.</footer>
+<script src="phones-catalog.js"></script><script src="api-client.js"></script><script type="module" src="ai-studio.js"></script></body></html>
