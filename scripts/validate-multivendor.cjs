@@ -21,10 +21,14 @@ async function main(){
     if(sql.includes("GROUP BY s.id"))return [];
     return mode==="all"?[]:null;
   };
-  const env={DB:{prepare(sql){return{bind(...args){return{
-    first:async()=>execute(sql,args,"first"),all:async()=>({results:execute(sql,args,"all")||[]}),
-    run:async()=>({success:true})
-  };}}}}};
+  const env={DB:{prepare(sql){
+    const command=(args)=>({
+      first:async()=>execute(sql,args,"first"),
+      all:async()=>({results:execute(sql,args,"all")||[]}),
+      run:async()=>({success:true})
+    });
+    return {bind:(...args)=>command(args), ...command([])};
+  }}};
   const utils={
     json:(body,status=200)=>Response.json(body,{status}),
     requireAuth:async request=>({id:request.headers.get("x-test-user"),role:"supplier"}),
