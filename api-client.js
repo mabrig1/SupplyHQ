@@ -1,5 +1,6 @@
 (function () {
-  const DEFAULT_API = "https://api.supplyhq.mabrigkorie.org";
+  const NEW_DOMAIN = ["supplyhq.online","www.supplyhq.online"].includes(window.location.hostname);
+  const DEFAULT_API = NEW_DOMAIN ? "https://api.supplyhq.online" : "https://api.supplyhq.mabrigkorie.org";
   const API_URL = (localStorage.getItem("supplyhq-api-url") || DEFAULT_API).replace(/\/$/, "");
   const TOKEN_KEY = "supplyhq-auth-token";
   const USER_KEY = "supplyhq-auth-user";
