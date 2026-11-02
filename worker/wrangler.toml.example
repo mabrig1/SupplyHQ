@@ -12,3 +12,8 @@ PAYSTACK_CALLBACK_URL = "https://supplyhq.mabrigkorie.org/dashboard.html"
 binding = "DB"
 database_name = "supplyhq"
 database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+
+# REQUIRED for merchant product images. Create this R2 bucket in Cloudflare first.
+[[r2_buckets]]
+binding = "PRODUCT_IMAGES"
+bucket_name = "supplyhq-product-images"
