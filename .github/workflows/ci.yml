@@ -27,6 +27,10 @@ jobs:
           node --check dashboard.js
           node --check procurement.js
           node --check admin.js
+          node --check phones-catalog.js
+          node --check phones.js
+          node --check sw.js
+          node scripts/validate-phones-catalog.cjs
 
       - name: Check Worker module
         run: |
