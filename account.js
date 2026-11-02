@@ -23,6 +23,7 @@ function showAccountState(){
   if(user){
     signedOut.hidden=true;
     signedIn.hidden=false;
+    document.getElementById("sellerStudioLink").hidden=user.role!=="supplier";
     document.getElementById("accountEmail").textContent=user.email;
     document.getElementById("accountRole").textContent=user.role;
     document.getElementById("accountState").textContent=user.status || "Active";
