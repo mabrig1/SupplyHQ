@@ -30,9 +30,13 @@ jobs:
           node --check phones-catalog.js
           node --check phones.js
           node --check sw.js
+          node --check seller.js
+          node --check stores.js
+          node --check store.js
+          node scripts/validate-multivendor.cjs
           node scripts/validate-phones-catalog.cjs
 
       - name: Check Worker module
         run: |
-          cp worker/src/index.js /tmp/supplyhq-worker.mjs
-          node --check /tmp/supplyhq-worker.mjs
+          node --check worker/src/index.js
+          node --check worker/src/marketplace.js
