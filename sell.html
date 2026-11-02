@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101b34"><meta name="description" content="Open your own store on SupplyHQ: register, upload product photos, set prices and publish after verification.">
+<title>Open Your Store — SupplyHQ</title><link rel="stylesheet" href="marketplace.css"></head>
+<body><header><a class="brand" href="./">Supply<span>HQ</span></a><nav aria-label="Navigation"><a href="index.html">MABRIG Phones</a><a href="stores.html">Explore stores</a><a href="account.html?seller=1">Seller account</a></nav></header>
+<main><section class="hero"><div class="eyebrow">SUPPLYHQ SELLER STUDIO</div><h1>Create your store.<br>Grow your business.</h1>
+<p>Every seller gets their own store link, product photos, prices and a dashboard. Set up your shop, upload inventory and request approval to start sharing your listings.</p>
+<div class="quick-links"><a href="account.html?seller=1" class="button" id="sellerAccess">Register / sign in</a><a href="stores.html" class="outline">Browse shops</a></div></section>
+<div id="status" class="message" role="status" aria-live="polite">Checking your seller account and store connection…</div>
+<section class="panel" id="signedOut" hidden><h2>Register as a seller</h2><p>Use the <strong>Supplier / wholesaler</strong> account type to set up a store. You will then return here to add products.</p><a class="button" href="account.html?seller=1">Create my seller account</a></section>
+<section class="panel" id="buyerOnly" hidden><h2>Seller access required</h2><p>This account is a buyer. Please register a separate seller account using another email address.</p><a class="button" href="account.html?seller=1">Go to seller registration</a></section>
+<div id="workspace" hidden>
+<div class="grid-2">
+<section class="panel"><div class="eyebrow">STEP 1 · BUSINESS VERIFICATION</div><h2>Your seller profile</h2>
+<p id="approvalInfo" class="message">Applications require administrator approval before listings appear publicly.</p>
+<form id="profileForm"><div class="form-grid">
+<label>Registered business / trading name<input name="business" required maxlength="160" autocomplete="organization"></label>
+<label>Business phone<input name="phone" required maxlength="50" type="tel" autocomplete="tel"></label>
+<label>Primary product category<input name="category" required maxlength="100" placeholder="e.g. Phone accessories"></label>
+<label>City / State<input name="location" required maxlength="160" placeholder="e.g. Enugu, Nigeria"></label>
+</div><button class="primary" type="submit">Save seller profile</button></form>
+</section>
+<section class="panel"><div class="eyebrow">STEP 2 · YOUR STOREFRONT</div><h2>Set up your shop</h2>
+<p>Your store URL stays the same after creation. A public storefront is released only after your seller profile is approved.</p>
+<form id="storeForm"><div class="form-grid">
+<label>Store display name<input name="name" required minlength="3" maxlength="100" placeholder="e.g. Ada Tech Hub"></label>
+<label>Store link / slug<input id="slugInput" name="slug" required minlength="3" maxlength="40" pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="ada-tech-hub"></label>
+<label>Store city<input name="location" required maxlength="120" placeholder="e.g. Lagos"></label>
+<label>Public business WhatsApp (optional)<input name="publicPhone" maxlength="35" inputmode="tel" placeholder="2348012345678"></label>
+<label class="wide">About your shop<textarea name="description" maxlength="500" placeholder="What do you sell? What makes your store different?"></textarea></label>
+</div><button class="primary" type="submit">Save store</button></form>
+<div id="storeLink" class="message" hidden></div>
+</section></div>
+<section class="panel" id="productsPanel"><div class="eyebrow">STEP 3 · PRODUCT MANAGEMENT</div><h2>Upload and manage products</h2>
+<p>Upload an actual product photo (JPEG, PNG or WebP, maximum 5 MB). You can save drafts while approval is pending. Approved sellers can publish listings.</p>
+<form id="productForm"><input type="hidden" name="id"><input type="hidden" name="imageKey">
+<div class="form-grid">
+<label>Product name<input name="name" required minlength="3" maxlength="120" placeholder="e.g. 20,000mAh Power Bank"></label>
+<label>Category<input name="category" required maxlength="60" placeholder="e.g. Power Banks"></label>
+<label>Price in naira (₦)<input type="number" name="price" required min="1" max="1000000000" step="0.01" placeholder="15000"></label>
+<label>Quantity available<input type="number" name="stock" required min="0" max="1000000" step="1" value="1"></label>
+<label>Unit / pack<input name="unit" required maxlength="32" value="each"></label>
+<label>Product photo<input id="productImage" name="image" type="file" accept="image/jpeg,image/png,image/webp"></label>
+<label class="wide">Product description<textarea name="description" maxlength="1200" placeholder="Features, colour, size, capacity, included accessories…"></textarea></label>
+<label class="wide">Listing visibility<select id="productStatus" name="status"><option value="Draft">Save as draft</option><option value="Published">Publish in my store</option></select></label>
+</div><div class="actions"><button class="primary" type="submit" id="saveProduct">Save product</button><button class="outline" type="button" id="clearProduct">Clear form</button><small id="uploadNotice" class="muted"></small></div></form>
+<h3 style="margin-top:32px">Your inventory <span id="productCount" class="badge">0 products</span></h3>
+<div id="inventory" class="empty">Create your store to begin adding products.</div>
+</section></div>
+</main><footer>SupplyHQ · Seller-owned listings · Products are published only after seller approval</footer>
+<script src="api-client.js"></script><script src="seller.js" defer></script></body></html>
