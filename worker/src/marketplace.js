@@ -160,13 +160,28 @@ export async function marketplace(request,env,utils) {
     const store=await requireStore(env,user);
     const count=await env.DB.prepare("SELECT COUNT(*) AS n FROM merchant_uploads WHERE store_id=?")
       .bind(store.id).first();
-    if(Number(count.n)>=250) bad("Store image upload limit reached",409);
+    const uploadLimit=store.approval==="Approved"?250:3;
+    if(Number(count.n)>=uploadLimit) bad(store.approval==="Approved" ? "Store image upload limit reached" : "Draft image limit reached until seller approval",409);
     const type=(request.headers.get("Content-Type")||"").split(";")[0].trim().toLowerCase();
     if(!["image/jpeg","image/png","image/webp"].includes(type)) bad("Upload a JPEG, PNG or WebP image");
     const length=Number(request.headers.get("Content-Length")||"0");
     if(length>5_000_000) bad("Image is too large (maximum 5 MB)",413);
-    const data=new Uint8Array(await request.arrayBuffer());
-    if(data.length<32 || data.length>5_000_000) bad("Image must be between 32 bytes and 5 MB",413);
+    // Stream into a bounded buffer; reject excessive bodies even when Content-Length is absent.
+    const reader=request.body?.getReader();
+    if(!reader) bad("Image body is required");
+    const chunks=[];
+    let total=0;
+    while(true){
+      const {done,value}=await reader.read();
+      if(done)break;
+      total+=value.length;
+      if(total>5_000_000){await reader.cancel();bad("Image exceeds 5 MB limit",413);}
+      chunks.push(value);
+    }
+    if(total<32) bad("Image must be at least 32 bytes",413);
+    const data=new Uint8Array(total);
+    let cursor=0;
+    for(const chunk of chunks){data.set(chunk,cursor);cursor+=chunk.length;}
     const ext=imageFormat(data,type), key=crypto.randomUUID()+"."+ext;
     await env.PRODUCT_IMAGES.put("stores/"+store.id+"/"+key,data,{httpMetadata:{contentType:type}});
     try{
