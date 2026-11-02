@@ -1,4 +1,5 @@
 import { marketplace } from "./marketplace.js";
+import { agentApi } from "./agent-api.js";
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
@@ -527,6 +528,11 @@ async function handler(request, env) {
     const user = await createUser(env,email,password,"admin");
     await audit(env,user.id,"admin.bootstrap","user",user.id,{});
     return json({ ok:true, user },201);
+  }
+
+  // Auditable read-only specialist agents and opt-in seller drafting API.
+  if (path.startsWith("/api/agents")) {
+    return await agentApi(request,env,{json,requireAuth,bodyJson,audit});
   }
 
   // Multi-vendor storefront routes are isolated from legacy wholesale listings.
