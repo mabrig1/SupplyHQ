@@ -37,6 +37,12 @@ jobs:
           node scripts/validate-agent-studio.cjs
           node scripts/validate-multivendor.cjs
           node scripts/validate-phones-catalog.cjs
+          node scripts/build-cloudflare-pages.cjs
+          test -f dist/index.html
+          test -f dist/ai.html
+          test -f dist/worker/src/agent-core.js
+          test ! -f dist/CNAME
+          test ! -f dist/worker/src/index.js
 
       - name: Check Worker module
         run: |
