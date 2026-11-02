@@ -4,7 +4,7 @@ compatibility_date = "2026-10-01"
 workers_dev = true
 
 [vars]
-ALLOWED_ORIGINS = "https://supplyhq.mabrigkorie.org,https://mabrig1.github.io"
+ALLOWED_ORIGINS = "https://supplyhq.mabrigkorie.org,https://supplyhq.online,https://www.supplyhq.online,https://mabrig1.github.io"
 COMMISSION_RATE = "5"
 PAYSTACK_CALLBACK_URL = "https://supplyhq.mabrigkorie.org/dashboard.html"
 
