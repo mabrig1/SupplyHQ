@@ -1,3 +1,4 @@
+import { marketplace } from "./marketplace.js";
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
@@ -526,6 +527,12 @@ async function handler(request, env) {
     const user = await createUser(env,email,password,"admin");
     await audit(env,user.id,"admin.bootstrap","user",user.id,{});
     return json({ ok:true, user },201);
+  }
+
+  // Multi-vendor storefront routes are isolated from legacy wholesale listings.
+  if (path.startsWith("/api/stores") || path.startsWith("/api/seller/") || path.startsWith("/api/store-media/")) {
+    const result=await marketplace(request,env,{json,requireAuth,authUser,bodyJson,routeMatch,audit});
+    if (result) return result;
   }
 
   if (method === "POST" && path === "/api/payments/webhook") {
