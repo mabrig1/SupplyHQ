@@ -1,16 +1,44 @@
-const CACHE = "supplyhq-v5";
-const ASSETS = ["./","./index.html","./dashboard.html","./procurement.html","./account.html","./admin.html","./styles.css","./enhancements.css","./dashboard.css","./procurement.css","./account.css","./admin.css","./api-client.js","./app.js","./dashboard.js","./procurement.js","./account.js","./admin.js","./manifest.webmanifest"];
-
-self.addEventListener("install", function(event){
-  event.waitUntil(caches.open(CACHE).then(function(cache){ return cache.addAll(ASSETS); }));
+/* SupplyHQ v6: updated storefront routes, network-first documents and scripts to avoid stale catalogue views. */
+const CACHE = "supplyhq-v6-phones-home";
+const CORE = [
+  "./", "./index.html", "./phones.html", "./wholesale.html",
+  "./phones.css", "./phones-catalog.js", "./phones.js",
+  "./styles.css", "./enhancements.css", "./api-client.js", "./app.js",
+  "./dashboard.html", "./procurement.html", "./account.html", "./admin.html",
+  "./dashboard.css", "./procurement.css", "./account.css", "./admin.css",
+  "./dashboard.js", "./procurement.js", "./account.js", "./admin.js",
+  "./manifest.webmanifest"
+];
+self.addEventListener("install", event => {
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(CORE)).then(() => self.skipWaiting()));
 });
-
-self.addEventListener("activate", function(event){
-  event.waitUntil(caches.keys().then(function(keys){
-    return Promise.all(keys.filter(function(key){ return key !== CACHE; }).map(function(key){ return caches.delete(key); }));
-  }));
+self.addEventListener("activate", event => {
+  event.waitUntil(Promise.all([
+    caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith("supplyhq-") && key !== CACHE).map(key => caches.delete(key)))),
+    self.clients.claim()
+  ]));
 });
-
-self.addEventListener("fetch", function(event){
-  event.respondWith(caches.match(event.request).then(function(response){ return response || fetch(event.request); }));
+self.addEventListener("fetch", event => {
+  const request = event.request;
+  if (request.method !== "GET") return;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
+  // Product photographs are requested on demand, not cached en masse.
+  if (url.pathname.includes("/phones-media/")) return;
+  const shouldRefresh = request.mode === "navigate" || /\.(?:js|css|html|webmanifest)$/.test(url.pathname) || url.pathname.endsWith("/");
+  if (!shouldRefresh) return;
+  event.respondWith(
+    fetch(request).then(response => {
+      if (response.ok) {
+        const copy = response.clone();
+        event.waitUntil(caches.open(CACHE).then(cache => cache.put(request, copy)));
+      }
+      return response;
+    }).catch(async () => {
+      const cached = await caches.match(request);
+      if (cached) return cached;
+      if (request.mode === "navigate") return (await caches.match("./index.html")) || Response.error();
+      return Response.error();
+    })
+  );
 });
