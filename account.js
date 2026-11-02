@@ -1,3 +1,13 @@
+const sellerOnboarding=new URLSearchParams(location.search).get("seller")==="1";
+if(sellerOnboarding){
+  const select=document.querySelector('#registerForm select[name="role"]');
+  if(select) select.value="supplier";
+}
+function afterAuth(){
+  if(sellerOnboarding && window.SupplyHQAPI.user()?.role==="supplier"){
+    location.href="sell.html";
+  }
+}
 function toast(message){
   const node=document.getElementById("toast");
   node.textContent=message;
@@ -13,6 +23,7 @@ function showAccountState(){
   if(user){
     signedOut.hidden=true;
     signedIn.hidden=false;
+    document.getElementById("sellerStudioLink").hidden=user.role!=="supplier";
     document.getElementById("accountEmail").textContent=user.email;
     document.getElementById("accountRole").textContent=user.role;
     document.getElementById("accountState").textContent=user.status || "Active";
@@ -57,6 +68,7 @@ document.getElementById("loginForm").addEventListener("submit",async event=>{
     },remember);
     toast("Signed in successfully");
     showAccountState();
+    afterAuth();
   }catch(error){
     toast(error.message || "Unable to sign in");
   }finally{

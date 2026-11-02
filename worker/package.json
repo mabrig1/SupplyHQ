@@ -9,7 +9,9 @@
     "db:schema:local": "wrangler d1 execute supplyhq --local --file=./schema.sql",
     "db:seed:local": "wrangler d1 execute supplyhq --local --file=./seed.sql",
     "db:schema": "wrangler d1 execute supplyhq --remote --file=./schema.sql",
-    "db:seed": "wrangler d1 execute supplyhq --remote --file=./seed.sql"
+    "db:seed": "wrangler d1 execute supplyhq --remote --file=./seed.sql",
+    "db:marketplace": "wrangler d1 execute supplyhq --remote --file=./migrations/001_marketplace.sql",
+    "db:marketplace:local": "wrangler d1 execute supplyhq --local --file=./migrations/001_marketplace.sql"
   },
   "devDependencies": {
     "wrangler": "^4.0.0"

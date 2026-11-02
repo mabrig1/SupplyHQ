@@ -179,8 +179,49 @@
     return request("/api/admin/rfqs/" + encodeURIComponent(id) + "/status", { method: "PATCH", body: { status } });
   }
 
+  // Public store directory and individual shops.
+  async function stores(){ return request("/api/stores"); }
+  async function store(slug){ return request("/api/stores/"+encodeURIComponent(slug)); }
+  // Authenticated seller operations; no other seller's records can be addressed.
+  async function sellerStore(){ return request("/api/seller/store"); }
+  async function saveSellerStore(payload){ return request("/api/seller/store",{method:"POST",body:payload}); }
+  async function createSellerProduct(payload){ return request("/api/seller/products",{method:"POST",body:payload}); }
+  async function updateSellerProduct(id,payload){ return request("/api/seller/products/"+encodeURIComponent(id),{method:"PATCH",body:payload}); }
+  async function archiveSellerProduct(id){ return request("/api/seller/products/"+encodeURIComponent(id),{method:"DELETE"}); }
+  async function uploadSellerImage(file) {
+    if(!token()) throw new Error("Please sign in to upload");
+    if(!["image/jpeg","image/png","image/webp"].includes(file.type) || file.size>5_000_000 || !file.size) {
+      throw new Error("Choose a JPEG, PNG or WebP under 5 MB");
+    }
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),30000);
+    try{
+      const response=await fetch(API_URL+"/api/seller/media",{
+        method:"POST",
+        headers:{"Authorization":"Bearer "+token(),"Content-Type":file.type,"Accept":"application/json"},
+        body:file,signal:controller.signal
+      });
+      const data=await response.json();
+      if(!response.ok) throw new Error(data.error||"Image upload failed");
+      return data;
+    }finally{clearTimeout(timeout);}
+  }
+  function mediaUrl(path) {
+    return typeof path==="string" && /^\/api\/store-media\/[0-9a-f-]{36}\.(jpg|png|webp)$/.test(path)
+      ? API_URL+path : "";
+  }
+
   window.SupplyHQAPI = {
     API_URL,
+    stores,
+    store,
+    sellerStore,
+    saveSellerStore,
+    createSellerProduct,
+    updateSellerProduct,
+    archiveSellerProduct,
+    uploadSellerImage,
+    mediaUrl,
     token,
     user,
     setSession,
