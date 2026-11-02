@@ -1,8 +1,8 @@
 /* SupplyHQ v6: updated storefront routes, network-first documents and scripts to avoid stale catalogue views. */
-const CACHE = "supplyhq-v7-vendor-stores";
+const CACHE = "supplyhq-v8-agent-commerce";
 const CORE = [
-  "./", "./index.html", "./phones.html", "./wholesale.html", "./sell.html", "./stores.html", "./store.html",
-  "./phones.css", "./phones-catalog.js", "./phones.js", "./marketplace.css", "./seller.js", "./stores.js", "./store.js",
+  "./", "./index.html", "./phones.html", "./wholesale.html", "./sell.html", "./stores.html", "./store.html", "./ai.html",
+  "./phones.css", "./phones-catalog.js", "./phones.js", "./marketplace.css", "./seller.js", "./stores.js", "./store.js", "./ai-studio.js", "./ai-studio.css", "./worker/src/agent-core.js",
   "./styles.css", "./enhancements.css", "./api-client.js", "./app.js",
   "./dashboard.html", "./procurement.html", "./account.html", "./admin.html",
   "./dashboard.css", "./procurement.css", "./account.css", "./admin.css",
